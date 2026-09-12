@@ -152,8 +152,11 @@ eq("nothing is ever sold, cable included", reasonsFor("out", "bulk"), ["Issued t
 eq("equipment comes in bought, built, or back from a job",
    reasonsFor("in", "serialized"), ["Purchase Restock", "Built in-house", "Return from Job"]);
 eq("cable is only ever bought or returned", reasonsFor("in", "bulk"), ["Purchase Restock", "Return from Job"]);
-eq("cable cannot be repaired or found", reasonsFor("condition", "bulk"), ["Damaged", "Missing", "Scrapped"]);
-eq("equipment has all five damage / loss outcomes", reasonsFor("condition", "serialized").length, 5);
+eq("cable cannot be repaired or found, but can be used up",
+   reasonsFor("condition", "bulk"), ["Used at Job", "Damaged", "Missing", "Scrapped"]);
+eq("equipment has all five damage / loss outcomes, and cannot be \"used up\"",
+   reasonsFor("condition", "serialized").length, 5);
+eq("equipment cannot be used up", reasonsFor("condition", "serialized").includes("Used at Job"), false);
 eq("damaged units come back only through Repaired", CONDITION_RULES.Repaired.from, ["damaged"]);
 eq("a unit at a job must be returned before it is marked damaged",
    CONDITION_RULES.Damaged.from.includes("at_job"), false);

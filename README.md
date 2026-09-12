@@ -118,7 +118,7 @@ password-reset and invitation links come back to the app instead of
 | **Product** (`/inventory/<id>`) | One product: its units with maker, year and whereabouts, and its history. Costs and value for admins. Edit or archive. |
 | **Unit** (`/units/<id>`) | One physical piece: what it is, where it is, who made it and when, and everything ever recorded against it. |
 | **Add item** (`/add`) | Creates the product and logs its opening stock. |
-| **Update stock** (`/update`) | Receive (bought, built in-house, or returned from a job), Dispatch to a job, Adjust after a shelf count or to fix an earlier entry, or Damage / loss (damaged, missing, scrapped, repaired, found — in the store or out at a job). Every entry can carry a note. |
+| **Update stock** (`/update`) | Receive (bought, built in-house, or returned from a job), Dispatch to a job, Adjust after a shelf count or to fix an earlier entry, or Damage / loss (damaged, missing, scrapped, repaired, found — in the store or out at a job — or cable/coil used up at a job). Every entry can carry a note. |
 | **Jobs** (`/jobs`) | Each job's units currently out, and everything that ever went to it. Add, edit, close or reopen a job; delete one only if nothing has ever been sent to it. |
 | **History** (`/history`) | Every movement, filterable by type, date, reason, category and job. CSV export. |
 | **Manage people** (`/admin`) | Admins only. Switch accounts between viewer and admin; review categories; back up and manage the size of the movement log. |
@@ -139,6 +139,11 @@ there is no "sold" path anywhere in the app.
 without coming home first, and cable burnt or left behind is written off against
 that job. Neither touches the store balance — the store gave the stock up when
 it was issued — so the same loss is never counted twice.
+
+**Cable that gets installed is not a loss.** "Used at Job" closes out what a
+job still has out the same way a loss does — the store balance already gave
+the amount up at dispatch — but says honestly that it did its job, instead of
+recording ordinary use as Damaged, Missing or Scrapped.
 
 ---
 

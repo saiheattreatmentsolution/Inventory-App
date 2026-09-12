@@ -16,6 +16,12 @@ export const CONDITION_RULES: Record<string, { from: UnitStatus[]; to: UnitStatu
   Scrapped: { from: ["in_store", "at_job", "damaged", "missing"], to: "scrapped" },
   Repaired: { from: ["damaged"], to: "in_store" },
   Found: { from: ["missing"], to: "in_store" },
+  // Cable/coil only — installed or otherwise used up at a job in the ordinary
+  // way. Not a loss: it closes out what that job still owes without touching
+  // the store balance, which already gave the amount up when it was
+  // dispatched. Kept out of REASONS.condition below so equipment never offers
+  // it — a burner cannot be "used up".
+  "Used at Job": { from: ["at_job"], to: "scrapped" },
 };
 
 // Structured replacements for the free-text "Reason" column in the workbook.
@@ -24,18 +30,20 @@ export const REASONS: Record<MovementType, string[]> = {
   in: ["Purchase Restock", "Built in-house", "Return from Job"],
   out: ["Issued to Job"],
   adjust: ["Inventory Count Audit", "Correction"],
-  condition: Object.keys(CONDITION_RULES),
+  condition: Object.keys(CONDITION_RULES).filter((r) => r !== "Used at Job"),
 };
 
 /**
  * The reasons that make sense for this kind of product. Nothing is ever sold —
  * stock goes out to a job and comes back. Equipment is bought or built
  * in-house; cable and coil are only ever bought, and have no pieces to repair
- * or find.
+ * or find — but they do get installed and used up, which is not the same as
+ * lost or damaged, so it gets its own reason instead of borrowing "Scrapped".
  */
 export function reasonsFor(type: MovementType, tracking: Tracking): string[] {
   if (tracking === "serialized") return REASONS[type];
   if (type === "in") return ["Purchase Restock", "Return from Job"];
-  if (type === "condition") return REASONS.condition.filter((r) => CONDITION_RULES[r].to !== "in_store");
+  if (type === "condition")
+    return ["Used at Job", ...REASONS.condition.filter((r) => CONDITION_RULES[r].to !== "in_store")];
   return REASONS[type];
 }

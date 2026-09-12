@@ -24,7 +24,7 @@ const MODES: { type: MovementType; label: string; hint: string }[] = [
   {
     type: "condition",
     label: "Damage / loss",
-    hint: "Something was damaged, lost or scrapped — or has been repaired or found",
+    hint: "Something was damaged, lost, scrapped or used up — or has been repaired or found",
   },
 ];
 
@@ -160,13 +160,17 @@ function UpdateStockView() {
   // Everything that leaves the store goes to a job. A returned unit already
   // knows which job it is at; returned cable/coil has to be told.
   const bulkReturn = !serialized && type === "in" && reason === "Return from Job";
-  const needsJob = (type === "out" && reason === "Issued to Job") || bulkReturn;
   // Cable can also be written off where it stands — burnt or lost at the site it
   // went to. Equipment already allows that: a unit at a job can be marked
   // missing without coming home first. This is the same thing for cable, and
   // without it a loss at site would come off the shelf a second time.
   const bulkLoss = !serialized && type === "condition";
   const lostAtJob = bulkLoss && jobId !== "";
+  // Cable that was installed or used up at a job is not a loss, but it closes
+  // out that job's balance the same way — and unlike a loss, it can only ever
+  // have happened at a job, so the job is required rather than optional.
+  const usedAtJob = bulkLoss && reason === "Used at Job";
+  const needsJob = (type === "out" && reason === "Issued to Job") || bulkReturn || usedAtJob;
   const showJob = needsJob || bulkLoss;
   // How much of this cable/coil is out at each job — a return can't exceed it.
   const outAtJobs = useMemo(
@@ -465,7 +469,9 @@ function UpdateStockView() {
                   <p className="mt-1 text-[11px] text-muted">
                     {serialized
                       ? CONDITION_HINT[reason]
-                      : "Cable and coil are tracked by amount, so this writes off a quantity — from the store, or from what a job still has out. If it turns up again, receive it back in."}
+                      : reason === "Used at Job"
+                        ? "For cable or coil that was installed or otherwise used up — the normal end for it, not a loss. Closes out what the job still has out."
+                        : "Cable and coil are tracked by amount, so this writes off a quantity — from the store, or from what a job still has out. If it turns up again, receive it back in."}
                   </p>
                 </div>
               )}
@@ -500,15 +506,17 @@ function UpdateStockView() {
                 </div>
               )}
 
-              {/* Job — where this is going, coming back from, or was lost */}
+              {/* Job — where this is going, coming back from, was lost, or was used up */}
               {showJob && (
                 <div>
                   <label className="label" htmlFor="job">
-                    {bulkLoss
-                      ? "Where did this happen?"
-                      : bulkReturn
-                        ? "Coming back from which job?"
-                        : "Going to which job?"}
+                    {usedAtJob
+                      ? "Which job was this used at?"
+                      : bulkLoss
+                        ? "Where did this happen?"
+                        : bulkReturn
+                          ? "Coming back from which job?"
+                          : "Going to which job?"}
                   </label>
                   {jobChoices.length === 0 && !bulkLoss ? (
                     <p className="rounded border border-warn-500/35 bg-warn-50 px-2 py-1.5 text-xs text-warn-600">
@@ -524,6 +532,10 @@ function UpdateStockView() {
                         </>
                       )}
                     </p>
+                  ) : jobChoices.length === 0 && usedAtJob ? (
+                    <p className="rounded border border-warn-500/35 bg-warn-50 px-2 py-1.5 text-xs text-warn-600">
+                      None of this product is out at a job, so there is nothing to close out.
+                    </p>
                   ) : (
                     <select
                       id="job"
@@ -532,7 +544,7 @@ function UpdateStockView() {
                       onChange={(e) => setJobId(e.target.value)}
                       required={needsJob}
                     >
-                      <option value="">{bulkLoss ? "In the store" : "Choose a job…"}</option>
+                      <option value="">{bulkLoss && !usedAtJob ? "In the store" : "Choose a job…"}</option>
                       {jobChoices.map((j) => (
                         <option key={j.id} value={j.id}>
                           {j.name}
@@ -542,10 +554,16 @@ function UpdateStockView() {
                       ))}
                     </select>
                   )}
-                  {lostAtJob && (
+                  {lostAtJob && !usedAtJob && (
                     <p className="mt-1 text-[11px] text-muted">
                       This leaves the store balance alone — it left the store when it was issued.
                       It comes off what that job still has out.
+                    </p>
+                  )}
+                  {usedAtJob && jobId && (
+                    <p className="mt-1 text-[11px] text-muted">
+                      This leaves the store balance alone — it left the store when it was issued.
+                      It closes out what that job still has out, permanently.
                     </p>
                   )}
                 </div>

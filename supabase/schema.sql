@@ -473,19 +473,30 @@ begin
   end if;
 
   -- Damage / loss: what happened decides which units it can apply to and
-  -- where they end up.
+  -- where they end up. "Used at Job" is cable/coil only — installed or used up
+  -- at a job in the ordinary way, not a loss — and always names the job, since
+  -- there is no such thing as cable used up while sitting in the store.
   if p_type = 'condition' then
     select t.to_status, t.from_statuses into v_to, v_from
       from (values
-        ('Damaged',  'damaged',  array['in_store']),
-        ('Missing',  'missing',  array['in_store','at_job']),
-        ('Scrapped', 'scrapped', array['in_store','at_job','damaged','missing']),
-        ('Repaired', 'in_store', array['damaged']),
-        ('Found',    'in_store', array['missing'])
+        ('Damaged',      'damaged',  array['in_store']),
+        ('Missing',      'missing',  array['in_store','at_job']),
+        ('Scrapped',     'scrapped', array['in_store','at_job','damaged','missing']),
+        ('Repaired',     'in_store', array['damaged']),
+        ('Found',        'in_store', array['missing']),
+        ('Used at Job',  'scrapped', array['at_job'])
       ) as t(reason, to_status, from_statuses)
      where t.reason = p_reason;
     if v_to is null then
-      raise exception 'Say what happened: Damaged, Missing, Scrapped, Repaired or Found';
+      raise exception 'Say what happened: Damaged, Missing, Scrapped, Repaired, Found or Used at Job';
+    end if;
+    if p_reason = 'Used at Job' then
+      if rec.tracking = 'serialized' then
+        raise exception 'Equipment cannot be marked used up — mark it Scrapped if it is beyond repair';
+      end if;
+      if p_job_id is null then
+        raise exception 'Which job was this used at?';
+      end if;
     end if;
   end if;
 
@@ -622,8 +633,8 @@ begin
       end if;
 
       if p_type = 'condition' and p_job_id is not null then
-        -- Lost or scrapped AT A JOB. The shelf gave this up when it was issued,
-        -- so taking it off the balance again would count the same loss twice.
+        -- Lost, scrapped, or used up AT A JOB. The shelf gave this up when it
+        -- was issued, so taking it off the balance again would count it twice.
         -- It comes off what that job still has out, and never comes home.
         select quantity into v_at_job from public.job_stock
          where job_id = p_job_id and item_id = p_item_id
