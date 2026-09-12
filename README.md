@@ -38,14 +38,14 @@ Create a new project at [supabase.com/dashboard](https://supabase.com/dashboard)
   exactly what the app needs and nothing else.
 - **Enable automatic RLS** — **check** it.
 
-### 2. Run the two SQL files
+### 2. Run the SQL files
 
 In **SQL Editor → New query**, paste and run each file once, in this order:
 
 | File | What it does |
 |---|---|
+| [`supabase/drop-all.sql`](supabase/drop-all.sql) | Only on a project that already ran an older `schema.sql` and you're starting over: wipes every table, function and trigger this app created, so `schema.sql` can run clean. **Deletes all data with no way back** — skip it on a brand-new project. |
 | [`supabase/schema.sql`](supabase/schema.sql) | Creates every table, function, grant and policy. |
-| [`supabase/migrate.sql`](supabase/migrate.sql) | Only if it exists: brings a database that already ran an older `schema.sql` up to date. Skip it on a new project, and delete it once run. |
 | [`supabase/data.sql`](supabase/data.sql) | Loads the 12 starting categories, the 56 product names from the workbook, and the 7 job names. Every product starts at 0 — enter real opening stock, thresholds and costs yourself. Run it only once. |
 
 ### 3. Create your login
