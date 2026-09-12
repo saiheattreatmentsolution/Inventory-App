@@ -25,7 +25,7 @@ create table public.profiles (
 -- ---------- Categories (grouping, and the item ID prefix) ----------
 create table public.categories (
   name       text primary key check (length(name) between 1 and 100),
-  code       text not null unique check (code ~ '^[A-Z]{3}$'),  -- the SAI-<code>-0001 prefix
+  code       text not null unique check (code ~ '^[A-Z]{3}$'),  -- the SAI-<code>-001 prefix
   created_at timestamptz not null default now()
 );
 
@@ -44,7 +44,7 @@ create index jobs_status_idx on public.jobs (status, name);
 
 -- ---------- Items (one row per product) ----------
 create table public.items (
-  id                text primary key,               -- SAI-BRN-0001
+  id                text primary key,               -- SAI-BRN-001
   name              text not null check (length(name) between 1 and 200),
   category          text not null references public.categories(name),
   unit              text not null default 'pcs' check (length(unit) between 1 and 20),
@@ -90,7 +90,7 @@ create index movements_date_idx on public.movements (created_at desc);
 
 -- ---------- Units (one row per physical thing, for serialized items) ----------
 create table public.units (
-  id           text primary key,                    -- SAI-BRN-0001-01
+  id           text primary key,                    -- SAI-BRN-001-01
   item_id      text not null references public.items(id) on delete cascade,
   seq          int  not null check (seq > 0),
   -- The same product can be bought from different makers at different prices,
@@ -206,8 +206,8 @@ begin
   select coalesce(max((split_part(id, '-', 3))::int), 0) + 1
     into n
     from public.items
-   where id ~ ('^SAI-' || p_code || '-[0-9]{4}$');
-  return 'SAI-' || p_code || '-' || lpad(n::text, 4, '0');
+   where id ~ ('^SAI-' || p_code || '-[0-9]{3}$');
+  return 'SAI-' || p_code || '-' || lpad(n::text, 3, '0');
 end;
 $$;
 

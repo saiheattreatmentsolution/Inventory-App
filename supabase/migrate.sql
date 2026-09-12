@@ -3,8 +3,10 @@
 --
 -- Only for a project where schema.sql has already been run. It adds the year
 -- of manufacture on units, the two functions whose arguments changed to carry
--- it, and lets cable be written off at the job it was sent to instead of coming
--- off the store balance twice. A fresh project needs schema.sql, not this.
+-- it, lets cable be written off at the job it was sent to instead of coming
+-- off the store balance twice, and shortens new item IDs to 3 digits
+-- (SAI-BRN-0001 -> SAI-BRN-001), renumbering every item that already exists.
+-- A fresh project needs schema.sql, not this.
 --
 -- Safe to run once; running it twice is harmless.
 -- =============================================================
@@ -345,3 +347,122 @@ grant execute on function public.apply_movement(text, text, numeric, text, text,
 -- name, and this one was not in that list.
 grant select (manufacturing_year) on public.units to authenticated;
 grant update (manufacturing_year) on public.units to authenticated;
+
+-- ---------- 5. item IDs drop to 3 digits ----------
+-- Only touches items still in the old 4-digit shape, so this is harmless to
+-- run again — the second time finds nothing left to renumber.
+--
+-- items.id is a primary key that movements, units and job_stock all point to
+-- by plain foreign key (no ON UPDATE CASCADE), so renaming it outright would
+-- be rejected the moment a child row still pointed at the old value. The FKs
+-- are made deferrable for this transaction only, so the check happens once
+-- at commit — after every table agrees on the new id — then set back exactly
+-- as schema.sql defines them.
+begin;
+
+do $mig$
+declare
+  fk record;
+begin
+  for fk in
+    select conname, conrelid::regclass as tbl
+      from pg_constraint
+     where confrelid = 'public.items'::regclass and contype = 'f'
+  loop
+    execute format('alter table %s alter constraint %I deferrable initially deferred', fk.tbl, fk.conname);
+  end loop;
+end;
+$mig$;
+
+create temporary table item_id_renames as
+select id as old_id,
+       regexp_replace(id, '-[0-9]{4}$',
+         '-' || lpad((regexp_replace(id, '.*-([0-9]{4})$', '\1'))::int::text, 3, '0'))
+         as new_id
+  from public.items
+ where id ~ '-[0-9]{4}$';
+
+update public.movements m
+   set item_id = r.new_id
+  from item_id_renames r
+ where m.item_id = r.old_id;
+
+update public.job_stock j
+   set item_id = r.new_id
+  from item_id_renames r
+ where j.item_id = r.old_id;
+
+-- Unit ids carry the item id as a prefix (SAI-BRN-0001-01), so they are
+-- renamed alongside item_id, not left pointing at a prefix that no longer
+-- exists on the product they belong to.
+update public.units u
+   set id = r.new_id || substring(u.id from length(r.old_id) + 1),
+       item_id = r.new_id
+  from item_id_renames r
+ where u.item_id = r.old_id;
+
+-- movements.unit_ids is a plain text[], not a foreign key, but it still
+-- names units by the old prefix and would otherwise go stale silently.
+update public.movements m
+   set unit_ids = coalesce((
+         select array_agg(
+                  coalesce(
+                    (select r.new_id || substring(withord.val from length(r.old_id) + 1)
+                       from item_id_renames r
+                      where withord.val like r.old_id || '-%'),
+                    withord.val
+                  ) order by withord.ord
+                )
+           from unnest(m.unit_ids) with ordinality as withord(val, ord)
+       ), '{}')
+ where exists (
+   select 1 from unnest(m.unit_ids) as u(val), item_id_renames r
+    where u.val like r.old_id || '-%'
+ );
+
+update public.items i
+   set id = r.new_id
+  from item_id_renames r
+ where i.id = r.old_id;
+
+drop table item_id_renames;
+
+do $mig$
+declare
+  fk record;
+begin
+  for fk in
+    select conname, conrelid::regclass as tbl
+      from pg_constraint
+     where confrelid = 'public.items'::regclass and contype = 'f'
+  loop
+    execute format('alter table %s alter constraint %I not deferrable initially immediate', fk.tbl, fk.conname);
+  end loop;
+end;
+$mig$;
+
+commit;
+
+-- New items mint at 3 digits from here on. Replaced in place: the argument
+-- list is unchanged, so there is no old overload left behind to drop.
+create or replace function public.next_item_id(p_code text)
+returns text
+language plpgsql
+stable
+set search_path = public, pg_temp
+as $$
+declare
+  n int;
+begin
+  -- p_code goes into a regex and into the ID, so it is checked, not trusted.
+  if p_code !~ '^[A-Z]{3}$' then
+    raise exception 'Invalid category code: %', p_code;
+  end if;
+
+  select coalesce(max((split_part(id, '-', 3))::int), 0) + 1
+    into n
+    from public.items
+   where id ~ ('^SAI-' || p_code || '-[0-9]{3}$');
+  return 'SAI-' || p_code || '-' || lpad(n::text, 3, '0');
+end;
+$$;

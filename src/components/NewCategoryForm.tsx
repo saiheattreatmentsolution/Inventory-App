@@ -87,7 +87,7 @@ export function NewCategoryForm({
       )}
       {err && <p className="w-full text-[11px] text-danger-600">{err}</p>}
       <p className="w-full text-[11px] text-muted">
-        The code becomes the item-ID prefix (<span className="num">SAI-{codeValue || "XXX"}-0001</span>) and cannot
+        The code becomes the item-ID prefix (<span className="num">SAI-{codeValue || "XXX"}-001</span>) and cannot
         be changed afterwards.
       </p>
     </form>

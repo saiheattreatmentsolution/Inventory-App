@@ -76,7 +76,7 @@ export const UNIT_STATUS_LABEL: Record<UnitStatus, string> = {
 
 /** One physical thing — a specific burner, not "burners" in general. */
 export type Unit = {
-  id: string; // SAI-BRN-0001-01
+  id: string; // SAI-BRN-001-01
   item_id: string;
   seq: number;
   unit_cost: number | null;

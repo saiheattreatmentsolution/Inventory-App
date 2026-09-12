@@ -46,7 +46,7 @@ function AddItemForm() {
       .map((i) => Number(i.id.split("-")[2]))
       .filter((n) => !Number.isNaN(n));
     const next = (used.length ? Math.max(...used) : 0) + 1;
-    return `SAI-${code}-${String(next).padStart(4, "0")}`;
+    return `SAI-${code}-${String(next).padStart(3, "0")}`;
   }, [code, items]);
 
   const duplicate = useMemo(
