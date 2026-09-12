@@ -174,7 +174,7 @@ shop floor if it is labelled on the equipment.
 |---|---|
 | `items` | product — balance, reorder threshold, tracking mode, archived flag |
 | `units` | physical unit — maker, year made, cost, status, current job |
-| `movements` | stock event — signed quantity, reason, job, units covered, balance after |
+| `movements` | stock event — signed quantity, reason, job, units covered, balance after, and the amount for a bulk write-off at a job (that entry's own quantity is always 0) |
 | `jobs` | site or customer job |
 | `job_stock` | cable/coil product at a job — how much went out there and hasn't come back (caps both returns and write-offs at that job) |
 | `profiles` | login — display name and role |

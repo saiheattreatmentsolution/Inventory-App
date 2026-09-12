@@ -81,6 +81,11 @@ create table public.movements (
   actor_id      uuid references auth.users(id) on delete set null,
   job_id        uuid references public.jobs(id),     -- a job with history can't be deleted
   unit_ids      text[] not null default '{}',       -- which physical units this covered
+  -- Only set for a bulk write-off named against a job (quantity stays 0 there,
+  -- correctly — the store balance already moved when the stock was
+  -- dispatched). Without this, the actual amount damaged, missing, or used up
+  -- would be recorded nowhere at all.
+  write_off_quantity numeric check (write_off_quantity >= 0),
   balance_after numeric not null,
   created_at    timestamptz not null default now()
 );
@@ -444,6 +449,7 @@ declare
   v_to       text;
   v_from     text[];
   v_at_job   numeric;
+  v_write_off numeric;
 begin
   perform public.assert_can_write();
 
@@ -650,6 +656,9 @@ begin
            where job_id = p_job_id and item_id = p_item_id;
         end if;
         new_qty := rec.quantity;
+        -- The store balance's own delta stays 0 above, correctly — record the
+        -- actual amount here instead, or it is lost from the ledger entirely.
+        v_write_off := p_quantity;
       else
         new_qty := rec.quantity - p_quantity;
         if new_qty < 0 then
@@ -684,10 +693,10 @@ begin
 
   insert into public.movements (item_id, item_name, category, type, quantity,
                                 reason, note, actor, actor_id, job_id,
-                                unit_ids, balance_after)
+                                unit_ids, write_off_quantity, balance_after)
   values (rec.id, rec.name, rec.category, p_type, delta,
           p_reason, p_note, public.current_actor(), auth.uid(),
-          coalesce(p_job_id, v_from_job), v_units, new_qty);
+          coalesce(p_job_id, v_from_job), v_units, v_write_off, new_qty);
 
   return rec;
 end;

@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { useStore, JobInput } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
 import type { Job, Movement } from "@/lib/types";
-import { dateOnly, dateTime, qty, signed } from "@/lib/format";
+import { dateOnly, dateTime, qty, signed, movementAmountLabel } from "@/lib/format";
 import { Card, SectionTitle, PageHead, Spinner, Empty, Button, Chip, ItemId, TypeBadge } from "@/components/ui";
 
 const BLANK_JOB: JobInput = { name: "", site: "", customer: "", notes: "" };
@@ -20,6 +20,8 @@ export default function JobsPage() {
   const [form, setForm] = useState<JobInput>(BLANK_JOB);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  const unitOf = useMemo(() => new Map(items.map((i) => [i.id, i.unit])), [items]);
 
   // How much of our kit is sitting at each job right now.
   const outByJob = useMemo(() => {
@@ -253,7 +255,7 @@ export default function JobsPage() {
                 </div>
                 )}
 
-                <JobLedger job={job} entries={history} />
+                <JobLedger job={job} entries={history} unitOf={unitOf} />
               </Card>
             );
           })}
@@ -405,9 +407,11 @@ function JobEditor({ job, inUse, onDone }: { job: Job; inUse: string | null; onD
 function JobLedger({
   job,
   entries,
+  unitOf,
 }: {
   job: { id: string; name: string };
   entries: Movement[];
+  unitOf: Map<string, string>;
 }) {
   const [open, setOpen] = useState(false);
   if (entries.length === 0) return null;
@@ -431,11 +435,10 @@ function JobLedger({
           <li key={m.id} className="flex flex-wrap items-center gap-x-2 gap-y-1 py-1.5 text-xs">
             <TypeBadge type={m.type} />
             <span className="min-w-0 flex-1 truncate text-ink">{m.item_name}</span>
-            {m.unit_ids.length > 0 && (
-              <span className="num text-[11px] text-muted">
-                {m.unit_ids.length} {m.unit_ids.length === 1 ? "unit" : "units"}
-              </span>
-            )}
+            {(() => {
+              const label = movementAmountLabel(m, unitOf.get(m.item_id) ?? "");
+              return label && <span className="num text-[11px] text-muted">{label}</span>;
+            })()}
             <span
               className={`num font-semibold ${
                 m.quantity > 0 ? "text-ok-600" : m.quantity < 0 ? "text-alert-600" : "text-muted"

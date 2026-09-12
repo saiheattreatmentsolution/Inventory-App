@@ -7,7 +7,7 @@ import { useStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
 import { statusOf, Item } from "@/lib/types";
 import { UNITS } from "@/lib/categories";
-import { qty, signed, money, dateTime, dateOnly } from "@/lib/format";
+import { qty, signed, money, dateTime, dateOnly, movementAmountLabel } from "@/lib/format";
 import { Card, SectionTitle, StatusBadge, ItemId, TypeBadge, Spinner, Empty, Button } from "@/components/ui";
 import { UnitsEditor } from "@/components/UnitsEditor";
 import { valueOf } from "@/lib/valuation";
@@ -301,7 +301,10 @@ export default function ItemDetailPage() {
                   {m.reason ?? "—"}
                   {m.job_id ? ` · ${jobName(m.job_id)}` : ""}
                   {m.note ? ` · ${m.note}` : ""}
-                  {m.unit_ids.length > 0 ? ` · ${m.unit_ids.length} unit${m.unit_ids.length > 1 ? "s" : ""}` : ""}
+                  {(() => {
+                    const label = movementAmountLabel(m, item.unit);
+                    return label ? ` · ${label}` : "";
+                  })()}
                   {m.actor ? ` · ${m.actor}` : ""}
                 </span>
                 <span className="text-[11px] text-muted">{dateTime(m.created_at)}</span>

@@ -83,7 +83,7 @@ eq("source array not reordered", items.map((i) => i.id), before);
 const mv = (id: string, item: string, type: "in"|"out"|"adjust", q: number, when: string, reason: string): Movement => ({
   id, item_id: "SAI-HOS-0001", item_name: item, category: "Hoses", type, quantity: q,
   reason, note: "PO-1", actor: "Neeraj", actor_id: null, job_id: null, unit_ids: [],
-  balance_after: 10, created_at: when,
+  write_off_quantity: null, balance_after: 10, created_at: when,
 });
 const now = new Date();
 const iso = (d: Date) => d.toISOString();

@@ -6,7 +6,7 @@ import { useStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
 import { statusOf, StockStatus, STATUS_LABEL, Item } from "@/lib/types";
 import { totalValue } from "@/lib/valuation";
-import { qty, signed, money, relative, shortActor } from "@/lib/format";
+import { qty, signed, money, relative, shortActor, movementAmountLabel } from "@/lib/format";
 import {
   Card,
   SectionTitle,
@@ -32,6 +32,7 @@ export default function DashboardPage() {
   }, [items]);
 
   const valuation = useMemo(() => totalValue(items, units), [items, units]);
+  const unitOf = useMemo(() => new Map(items.map((i) => [i.id, i.unit])), [items]);
 
   // Worst first: out of stock, then deepest below its own threshold.
   const reorderQueue = useMemo(
@@ -192,8 +193,10 @@ export default function DashboardPage() {
                         <span className="font-semibold text-alert-600">{jobName(m.job_id)}</span>
                       </>
                     )}
-                    {m.unit_ids.length > 0 &&
-                      ` · ${m.unit_ids.length} unit${m.unit_ids.length > 1 ? "s" : ""}`}
+                    {(() => {
+                      const label = movementAmountLabel(m, unitOf.get(m.item_id) ?? "");
+                      return label ? ` · ${label}` : "";
+                    })()}
                     {m.note ? ` · ${m.note}` : ""}
                     {m.actor ? ` · ${shortActor(m.actor)}` : ""}
                   </p>

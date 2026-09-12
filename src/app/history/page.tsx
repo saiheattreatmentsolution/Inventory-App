@@ -7,7 +7,7 @@ import { useStore } from "@/lib/store";
 import { MovementType } from "@/lib/types";
 import { REASONS } from "@/lib/categories";
 import { filterMovements, MovementFilters, DateRange } from "@/lib/filters";
-import { qty, signed, dateTime, toCsv, downloadCsv } from "@/lib/format";
+import { qty, signed, dateTime, toCsv, downloadCsv, movementAmountLabel } from "@/lib/format";
 import { Card, ItemId, TypeBadge, Spinner, Empty, PageHead, Chip, Button } from "@/components/ui";
 import { SearchInput } from "@/components/SearchInput";
 
@@ -41,7 +41,8 @@ export default function HistoryPage() {
 }
 
 function HistoryView() {
-  const { movements, loading, configured, jobs, categories, jobName } = useStore();
+  const { movements, items, loading, configured, jobs, categories, jobName } = useStore();
+  const unitOf = useMemo(() => new Map(items.map((i) => [i.id, i.unit])), [items]);
   const router = useRouter();
   const params = useSearchParams();
 
@@ -93,7 +94,7 @@ function HistoryView() {
 
   const exportCsv = () => {
     const rows: (string | number | null)[][] = [
-      ["S.No.", "Date", "Item ID", "Product Name", "Category", "Type", "Stock In", "Stock Out", "Balance", "Reason", "Job", "Note", "Unit IDs", "User"],
+      ["S.No.", "Date", "Item ID", "Product Name", "Category", "Type", "Stock In", "Stock Out", "Balance", "Reason", "Job", "Written off", "Note", "Unit IDs", "User"],
       ...visible.map((m, n) => [
         n + 1,
         dateTime(m.created_at),
@@ -106,6 +107,7 @@ function HistoryView() {
         m.balance_after,
         m.reason ?? "",
         m.job_id ? jobName(m.job_id) : "",
+        m.write_off_quantity ?? "",
         m.note ?? "",
         m.unit_ids.join(" "),
         m.actor ?? "",
@@ -259,7 +261,7 @@ function HistoryView() {
                   <th className="px-3 py-2 text-right font-semibold">Balance</th>
                   <th className="px-3 py-2 font-semibold">Reason</th>
                   <th className="px-3 py-2 font-semibold">Job</th>
-                  <th className="px-3 py-2 font-semibold">Units</th>
+                  <th className="px-3 py-2 font-semibold">Amount</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
@@ -289,11 +291,11 @@ function HistoryView() {
                     </td>
                     <td className="px-3 py-2 text-muted">{m.job_id ? jobName(m.job_id) : "—"}</td>
                     <td className="num px-3 py-2 text-[11px] text-muted">
-                      {m.unit_ids.length === 0
-                        ? "—"
-                        : m.unit_ids.length <= 2
+                      {m.unit_ids.length > 0
+                        ? m.unit_ids.length <= 2
                           ? m.unit_ids.map((u) => u.split("-").slice(-1)[0]).join(", ")
-                          : `${m.unit_ids.length} units`}
+                          : `${m.unit_ids.length} units`
+                        : (m.write_off_quantity !== null && `${qty(m.write_off_quantity)} ${unitOf.get(m.item_id) ?? ""}`) || "—"}
                     </td>
                   </tr>
                 ))}
@@ -329,7 +331,10 @@ function HistoryView() {
                   {m.reason ?? "—"}
                   {m.job_id ? ` · ${jobName(m.job_id)}` : ""}
                   {m.note ? ` · ${m.note}` : ""}
-                  {m.unit_ids.length > 0 ? ` · ${m.unit_ids.length} unit${m.unit_ids.length > 1 ? "s" : ""}` : ""}
+                  {(() => {
+                    const label = movementAmountLabel(m, unitOf.get(m.item_id) ?? "");
+                    return label ? ` · ${label}` : "";
+                  })()}
                   {" · "}
                   {dateTime(m.created_at)}
                 </p>

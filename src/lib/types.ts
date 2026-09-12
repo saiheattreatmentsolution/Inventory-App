@@ -33,6 +33,14 @@ export type Movement = {
   actor_id: string | null;   // auth user id, so attribution survives a rename
   job_id: string | null;
   unit_ids: string[];        // which physical units this movement covered
+  /**
+   * Only set for a bulk write-off named against a job (Damaged, Missing,
+   * Scrapped or Used at Job with a job attached) — how much that entry
+   * covered. quantity stays 0 for these, correctly: the store balance already
+   * moved when the stock was dispatched, so this is the only record of the
+   * actual amount.
+   */
+  write_off_quantity: number | null;
   balance_after: number;
   created_at: string;
 };

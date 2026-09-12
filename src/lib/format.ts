@@ -90,6 +90,24 @@ export function shortActor(actor: string | null): string {
   return name.length > 14 ? `${name.slice(0, 13)}…` : name;
 }
 
+/**
+ * The amount a movement covered, for the card subtitle — "3 units" for
+ * serialized equipment, or the metres/kg for a bulk write-off at a job. A
+ * bulk write-off at a job always shows quantity 0 (correctly — the store
+ * balance already moved when the stock was dispatched), so without this the
+ * card would give no clue how much cable was actually damaged, missing, or
+ * used up. Empty string when neither applies (a normal bulk in/out/adjust
+ * already shows its amount as the signed quantity itself).
+ */
+export function movementAmountLabel(
+  m: { unit_ids: string[]; write_off_quantity: number | null },
+  unit: string,
+): string {
+  if (m.unit_ids.length > 0) return `${m.unit_ids.length} ${m.unit_ids.length === 1 ? "unit" : "units"}`;
+  if (m.write_off_quantity !== null) return `${qty(m.write_off_quantity)} ${unit}`;
+  return "";
+}
+
 /** Hands the browser a file to save. Used for CSV exports and full backups. */
 export function downloadFile(filename: string, contents: string, mime: string): void {
   const blob = new Blob([contents], { type: mime });
