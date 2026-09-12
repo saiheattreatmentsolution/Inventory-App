@@ -32,7 +32,11 @@ alter table public.units
 -- the same name, and PostgREST refuses to choose between two overloads.
 drop function if exists public.mint_units(text, int, numeric, text);
 
-create function public.mint_units(
+-- CREATE OR REPLACE, not CREATE: if this database already ran an earlier copy
+-- of this migration, the 5-argument mint_units is already there, and a bare
+-- CREATE would fail with "already exists". The DROP above only clears out the
+-- old 4-argument shape; it is a no-op once that one is gone.
+create or replace function public.mint_units(
   p_item_id      text,
   p_count        int,
   p_unit_cost    numeric default null,
@@ -71,7 +75,7 @@ $$;
 -- ---------- 3. apply_movement passes the year through ----------
 drop function if exists public.apply_movement(text, text, numeric, text, text, uuid, text[], numeric, text);
 
-create function public.apply_movement(
+create or replace function public.apply_movement(
   p_item_id      text,
   p_type         text,
   p_quantity     numeric,
