@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+/* --------------------------------------------------------------------------
+   Sai Group inventory — ledger-first industrial palette.
+   Steel blue for structure, a warm rust/amber accent for the "heat" side of
+   the business. Deliberately light-only: shop-floor tablets and desktops in a
+   bright store, one predictable look for everyone.
+   -------------------------------------------------------------------------- */
+
+@theme {
+  --color-paper: #f4f6f8;
+  --color-card: #ffffff;
+  --color-line: #dbe2e8;
+  --color-line-strong: #c3ced7;
+
+  --color-ink: #14212c;
+  --color-muted: #5d7181;
+
+  --color-steel-50: #eef4f8;
+  --color-steel-100: #dbe8f0;
+  --color-steel-200: #b9d1e0;
+  --color-steel-400: #558db1;
+  --color-steel-500: #366d92;
+  --color-steel-600: #2a5878;
+  --color-steel-700: #1f4460;
+  --color-steel-900: #102434;
+
+  --color-rust-50: #fdf0e7;
+  --color-rust-100: #fadfcd;
+  --color-rust-500: #c85f22;
+  --color-rust-600: #a94e1a;
+
+  /* Status ramp. The fill tier is validated for colour-vision separation
+     (adjacent-pair CVD delta-E passes); the text tier is the same hues darkened to
+     >=6:1 on white. Every status also carries a written label - never colour alone. */
+  --color-ok-50: #e8f4ee;
+  --color-ok-500: #1c7a52;
+  --color-ok-600: #16653f;
+  --color-warn-50: #fdf6e3;
+  --color-warn-500: #c9a227;
+  --color-warn-600: #7a5c07;
+  --color-alert-50: #fdeee4;
+  --color-alert-500: #d2601a;
+  --color-alert-600: #a8410a;
+  --color-danger-50: #fdecea;
+  --color-danger-500: #96170f;
+  --color-danger-600: #96170f;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* These live in the `components` layer on purpose. Tailwind v4 puts utilities in
+   a later layer, and unlayered CSS beats every layer — so leaving .field
+   unlayered meant its padding silently overrode utilities like `pl-9`, and the
+   search icon sat on top of the placeholder text. Inside the layer, a utility
+   on the element wins, which is what you expect when you write `field pl-9`. */
+@layer components {
+  /* Tabular figures everywhere quantities are shown, so columns line up. */
+  .num {
+    font-variant-numeric: tabular-nums;
+    font-family: var(--font-mono);
+  }
+
+  /* Shared control styling — one look for every input on every page. */
+  .field {
+    width: 100%;
+    border: 1px solid var(--color-line-strong);
+    background: var(--color-card);
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.625rem;
+    font-size: 0.875rem;
+    color: var(--color-ink);
+    outline: none;
+  }
+  .field:focus {
+    border-color: var(--color-steel-400);
+    box-shadow: 0 0 0 3px var(--color-steel-100);
+  }
+  .field::placeholder {
+    color: #93a5b2;
+  }
+
+  /* iOS Safari zooms the viewport when a focused input is under 16px, so on
+     phones — the shop-floor case — the fields go full size. */
+  @media (max-width: 640px) {
+    .field {
+      font-size: 16px;
+    }
+  }
+
+  .label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    margin-bottom: 0.3rem;
+  }
+
+  /* Hide the scrollbar on the horizontal chip rows, keep the scrolling. */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
