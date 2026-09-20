@@ -437,7 +437,7 @@ function UpdateStockView() {
                     onClick={() => startMovement(m.type, selected)}
                     className={`rounded-md border px-3 py-2.5 text-sm font-semibold transition-colors ${
                       type === m.type
-                        ? "border-steel-600 bg-steel-600 text-white"
+                        ? "border-steel-600 bg-steel-600 text-on-primary"
                         : "border-line-strong bg-card text-muted hover:border-steel-400"
                     }`}
                   >

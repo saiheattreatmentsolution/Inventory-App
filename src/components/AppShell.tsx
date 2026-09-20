@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { UnitFinder } from "@/components/UnitFinder";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 type NavItem = {
   href: string;
@@ -34,7 +35,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-dvh">
-      <header className="sticky top-0 z-30 border-b border-line bg-steel-900 text-white">
+      <header className="elevated sticky top-0 z-30 bg-steel-900 text-white">
         <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2.5">
           <Link href="/" className="flex items-center gap-2.5">
             <span className="flex h-8 w-8 items-center justify-center rounded bg-rust-500 text-sm font-bold">
@@ -74,7 +75,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Mobile tab bar — thumb-reachable on the shop floor. */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-30 grid border-t border-line bg-card md:hidden"
+        className="elevated-pop fixed inset-x-0 bottom-0 z-30 grid border-t border-line bg-card md:hidden"
         style={{ gridTemplateColumns: `repeat(${nav.length}, minmax(0, 1fr))` }}
       >
         {nav.map((n) => {
@@ -124,7 +125,7 @@ function UserMenu() {
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 rounded-md border border-white/20 px-2.5 py-1.5 text-xs text-steel-100 hover:bg-white/10"
       >
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-steel-500 text-[10px] font-bold text-white">
+        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-steel-500 text-[10px] font-bold text-on-primary">
           {initial}
         </span>
         <span className="hidden max-w-32 truncate sm:inline">{name}</span>
@@ -138,7 +139,7 @@ function UserMenu() {
       </button>
 
       {open && (
-        <div className="absolute right-0 z-40 mt-1.5 w-56 rounded-md border border-line bg-card py-1 shadow-lg">
+        <div className="elevated-pop absolute right-0 z-40 mt-1.5 w-56 rounded-xl border border-line bg-card py-1">
           <div className="border-b border-line px-3 py-2">
             {editingName ? (
               <form
@@ -199,9 +200,12 @@ function UserMenu() {
               Manage people
             </Link>
           )}
+          <div className="border-t border-line">
+            <ThemeToggle />
+          </div>
           <button
             onClick={() => void signOut()}
-            className="block w-full px-3 py-2 text-left text-xs text-ink hover:bg-steel-50"
+            className="block w-full border-t border-line px-3 py-2 text-left text-xs text-ink hover:bg-steel-50"
           >
             Sign out
           </button>

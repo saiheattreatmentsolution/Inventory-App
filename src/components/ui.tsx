@@ -60,7 +60,7 @@ export function Card({
   className?: string;
 }) {
   return (
-    <div className={`rounded-lg border border-line bg-card ${className}`}>{children}</div>
+    <div className={`elevated rounded-xl border border-line bg-card ${className}`}>{children}</div>
   );
 }
 
@@ -103,7 +103,7 @@ export function Button({
   variant?: "primary" | "secondary" | "ghost" | "danger";
 }) {
   const styles = {
-    primary: "bg-steel-600 text-white hover:bg-steel-700 disabled:bg-steel-200",
+    primary: "bg-steel-600 text-on-primary hover:bg-steel-700 disabled:bg-steel-200 disabled:text-muted",
     secondary: "border border-line-strong bg-card text-ink hover:bg-steel-50 disabled:text-muted",
     ghost: "text-steel-600 hover:bg-steel-50",
     danger: "border border-danger-600/30 bg-danger-50 text-danger-600 hover:bg-danger-600 hover:text-white",
@@ -111,7 +111,7 @@ export function Button({
   return (
     <button
       {...props}
-      className={`inline-flex items-center justify-center gap-1.5 rounded-md px-3 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed ${styles} ${className}`}
+      className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed ${styles} ${className}`}
     >
       {children}
     </button>
@@ -128,7 +128,7 @@ export function Chip({
       {...props}
       className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
         active
-          ? "border-steel-600 bg-steel-600 text-white"
+          ? "border-steel-600 bg-steel-600 text-on-primary"
           : "border-line-strong bg-card text-muted hover:border-steel-400 hover:text-steel-600"
       }`}
     >

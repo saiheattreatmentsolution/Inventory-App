@@ -50,7 +50,7 @@ export function UnitFinder({ onClose }: { onClose: () => void }) {
         role="dialog"
         aria-modal="true"
         aria-label="Find a unit by ID"
-        className="w-full max-w-lg overflow-hidden rounded-lg border border-line bg-card shadow-lg"
+        className="elevated-pop w-full max-w-lg overflow-hidden rounded-xl border border-line bg-card"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="border-b border-line p-3">
