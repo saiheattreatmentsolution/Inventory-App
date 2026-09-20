@@ -7,7 +7,7 @@ import { useStore } from "@/lib/store";
 import { statusOf, MovementType, Item, UNIT_STATUS_LABEL } from "@/lib/types";
 import { CONDITION_RULES, reasonsFor } from "@/lib/categories";
 import { filterItems, EMPTY_ITEM_FILTERS } from "@/lib/filters";
-import { qty, relative } from "@/lib/format";
+import { parseDateInput, qty, relative } from "@/lib/format";
 import { Card, SectionTitle, StatusBadge, ItemId, Spinner, Empty, PageHead, Button, Chip } from "@/components/ui";
 import { SearchInput } from "@/components/SearchInput";
 import { AdminOnly } from "@/components/AdminOnly";
@@ -70,7 +70,7 @@ function UpdateStockView() {
   const [supplierInvoice, setSupplierInvoice] = useState("");
   const [unitCost, setUnitCost] = useState("");
   const [maker, setMaker] = useState("");
-  const [year, setYear] = useState("");
+  const [manufacturingDate, setManufacturingDate] = useState("");
   const [jobId, setJobId] = useState("");
   // null means "not touched yet", so the tick list falls back to whatever the
   // shelf is believed to hold right now — recomputed after every save, rather
@@ -104,7 +104,7 @@ function UpdateStockView() {
     setNote("");
     setUnitCost("");
     setMaker("");
-    setYear("");
+    setManufacturingDate("");
     setErr(null);
   };
 
@@ -116,7 +116,7 @@ function UpdateStockView() {
     setSupplierInvoice("");
     setUnitCost("");
     setMaker("");
-    setYear("");
+    setManufacturingDate("");
     setNote("");
     setErr(null);
     setPickedUnits(null);
@@ -204,9 +204,7 @@ function UpdateStockView() {
             : "What this is for";
   const costValue = unitCost === "" ? null : Number(unitCost);
   const costInvalid = costValue !== null && (Number.isNaN(costValue) || costValue < 0);
-  // Matches the check constraint on units.manufacturing_year.
-  const yearValue = year === "" ? null : Number(year);
-  const yearInvalid = yearValue !== null && !(yearValue >= 1950 && yearValue <= 2100);
+  const manufacturingDateInvalid = manufacturingDate !== "" && parseDateInput(manufacturingDate) === null;
 
   const makers = useMemo(
     () =>
@@ -246,7 +244,7 @@ function UpdateStockView() {
   const blocker = (() => {
     if (!selected) return "Pick an item";
     if (costInvalid) return "The cost is not a valid amount";
-    if (yearInvalid) return "The year of manufacture is not valid";
+    if (manufacturingDateInvalid) return "The manufacturing date is not valid";
     if (needsJob && !jobId) return "Choose the job";
     if (serialized) {
       if (mintingNew && (!validAmount || entered <= 0)) return "Enter how many units you received";
@@ -284,7 +282,7 @@ function UpdateStockView() {
         unit_ids: serialized && !mintingNew ? picked : [],
         unit_cost: costed ? costValue : null,
         manufacturer: mintingNew ? maker : "",
-        manufacturing_year: mintingNew ? yearValue : null,
+        manufacturing_date: mintingNew ? parseDateInput(manufacturingDate) : null,
       });
       setDone({ item: updated, delta: updated.quantity - before });
       resetMovement();
@@ -731,19 +729,17 @@ function UpdateStockView() {
                   )}
                   {serialized && (
                     <div>
-                      <label className="label" htmlFor="year">
-                        Year made
+                      <label className="label" htmlFor="manufacturing-date">
+                        Manufacturing date
                       </label>
                       <input
-                        id="year"
+                        id="manufacturing-date"
                         className="field num"
-                        type="number"
-                        min={1950}
-                        max={2100}
-                        step={1}
-                        value={year}
-                        onChange={(e) => setYear(e.target.value)}
-                        placeholder="2026"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="dd-mm-yyyy"
+                        value={manufacturingDate}
+                        onChange={(e) => setManufacturingDate(e.target.value)}
                       />
                       <p className="mt-1 text-[11px] text-muted">From the nameplate. Optional.</p>
                     </div>

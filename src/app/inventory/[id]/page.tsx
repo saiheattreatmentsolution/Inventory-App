@@ -293,22 +293,26 @@ export default function ItemDetailPage() {
         ) : (
           <ul className="divide-y divide-line">
             {history.map((m) => (
-              <li key={m.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2.5">
-                <TypeBadge type={m.type} />
-                <span className="num w-16 text-right text-sm font-semibold text-ink">{signed(m.quantity)}</span>
-                <span className="num w-24 text-xs text-muted">→ {qty(m.balance_after)} {item.unit}</span>
-                <span className="min-w-0 flex-1 truncate text-xs text-muted">
-                  {m.reason ?? "—"}
-                  {m.job_id ? ` · ${jobName(m.job_id)}` : ""}
-                  {m.note ? ` · ${m.note}` : ""}
-                  {m.supplier_invoice ? ` · Invoice: ${m.supplier_invoice}` : ""}
-                  {(() => {
-                    const label = movementAmountLabel(m, item.unit);
-                    return label ? ` · ${label}` : "";
-                  })()}
-                  {m.actor ? ` · ${m.actor}` : ""}
-                </span>
-                <span className="text-[11px] text-muted">{dateTime(m.created_at)}</span>
+              <li key={m.id} className="flex flex-wrap items-start gap-x-3 gap-y-1 px-4 py-2.5">
+                <div className="flex w-full shrink-0 items-center gap-x-3 sm:w-auto">
+                  <TypeBadge type={m.type} />
+                  <span className="num w-16 text-right text-sm font-semibold text-ink">{signed(m.quantity)}</span>
+                  <span className="num w-24 text-xs text-muted">→ {qty(m.balance_after)} {item.unit}</span>
+                </div>
+                <div className="min-w-0 flex-1 basis-full text-xs text-muted sm:basis-auto">
+                  <p className="font-medium text-ink">{m.reason ?? "—"}</p>
+                  <p className="mt-0.5 break-words">
+                    {m.job_id ? `${jobName(m.job_id)} · ` : ""}
+                    {m.note ? `Notes: ${m.note} · ` : ""}
+                    {m.supplier_invoice ? `Invoice: ${m.supplier_invoice} · ` : ""}
+                    {(() => {
+                      const label = movementAmountLabel(m, item.unit);
+                      return label ? `${label} · ` : "";
+                    })()}
+                    {m.actor ?? ""}
+                  </p>
+                </div>
+                <span className="shrink-0 text-[11px] text-muted sm:ml-auto">{dateTime(m.created_at)}</span>
               </li>
             ))}
           </ul>

@@ -90,8 +90,8 @@ export type Unit = {
   seq: number;
   unit_cost: number | null;
   manufacturer: string | null;
-  /** Year of manufacture off the nameplate, when it is known. */
-  manufacturing_year: number | null;
+  /** Full manufacture date when known. */
+  manufacturing_date: string | null;
   status: UnitStatus;
   job_id: string | null;
   created_at: string;

@@ -122,7 +122,7 @@ eq("csv still escapes embedded CR", toCsv([["a\rb"]]), '"a\rb"');
 const burner = mk("SAI-BRN-0003", "Oil Burner 8 MBTU", "Burners", 3, 1);
 const u = (id: string, cost: number | null, status: Unit["status"] = "in_store", maker: string | null = null): Unit => ({
   id, item_id: "SAI-BRN-0003", seq: Number(id.slice(-2)), unit_cost: cost,
-  manufacturer: maker, manufacturing_year: null, status, job_id: null,
+  manufacturer: maker, manufacturing_date: null, status, job_id: null,
   created_at: "2026-01-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z",
 });
 const burnerUnits = [

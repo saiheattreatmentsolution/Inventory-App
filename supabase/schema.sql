@@ -103,9 +103,7 @@ create table public.units (
   -- so what a unit cost belongs to the unit, not to the product.
   unit_cost    numeric check (unit_cost >= 0),
   manufacturer text check (length(manufacturer) <= 120),
-  -- The year it was made, off the nameplate. Only pcs products have units, so
-  -- this is only ever asked for equipment.
-  manufacturing_year int check (manufacturing_year between 1950 and 2100),
+  manufacturing_date date,
   -- in_store, at_job (job_id says which), damaged (repairable), missing,
   -- scrapped (gone for good). Only in_store counts toward the balance.
   status       text not null default 'in_store'
@@ -276,7 +274,7 @@ create function public.mint_units(
   p_count        int,
   p_unit_cost    numeric default null,
   p_manufacturer text default null,
-  p_year         int default null
+  p_manufacturing_date date default null
 )
 returns text[]
 language plpgsql
@@ -298,8 +296,9 @@ begin
 
   for i in 0 .. p_count - 1 loop
     new_id := p_item_id || '-' || lpad((next_seq + i)::text, 2, '0');
-    insert into public.units (id, item_id, seq, unit_cost, manufacturer, manufacturing_year)
-    values (new_id, p_item_id, next_seq + i, p_unit_cost, p_manufacturer, p_year);
+        insert into public.units (id, item_id, seq, unit_cost, manufacturer, manufacturing_date)
+        values (new_id, p_item_id, next_seq + i, p_unit_cost, p_manufacturer,
+          p_manufacturing_date);
     made := made || new_id;
   end loop;
 
@@ -434,7 +433,7 @@ create function public.apply_movement(
   p_unit_ids     text[] default '{}',
   p_unit_cost    numeric default null,
   p_manufacturer text default null,
-  p_year         int default null
+  p_manufacturing_date date default null
 ) returns public.items
 language plpgsql
 security definer
@@ -548,7 +547,7 @@ begin
         if p_quantity is null or p_quantity <= 0 or p_quantity <> trunc(p_quantity) then
           raise exception 'How many new units are you receiving? It must be a whole number.';
         end if;
-        v_units := public.mint_units(p_item_id, p_quantity::int, p_unit_cost, p_manufacturer, p_year);
+        v_units := public.mint_units(p_item_id, p_quantity::int, p_unit_cost, p_manufacturer, p_manufacturing_date);
         v_touched := cardinality(v_units);
       end if;
       new_qty := rec.quantity + v_touched;
@@ -702,6 +701,30 @@ begin
 
   return rec;
 end;
+$$;
+
+-- Stable RPC name used by the app for stock movements carrying metadata.
+create function public.apply_movement_with_metadata(
+  p_item_id          text,
+  p_type             text,
+  p_quantity         numeric,
+  p_reason           text,
+  p_note             text,
+  p_supplier_invoice text default null,
+  p_job_id           uuid default null,
+  p_unit_ids         text[] default '{}',
+  p_unit_cost        numeric default null,
+  p_manufacturer     text default null,
+  p_manufacturing_date date default null
+) returns public.items
+language sql
+security definer
+set search_path = public, pg_temp
+as $$
+  select public.apply_movement(
+    p_item_id, p_type, p_quantity, p_reason, p_note, p_supplier_invoice,
+    p_job_id, p_unit_ids, p_unit_cost, p_manufacturer, p_manufacturing_date
+  );
 $$;
 
 -- ---------- Delete a job added by mistake (admins only) ----------
@@ -860,7 +883,7 @@ grant select (id, name, category, unit, tracking, quantity, reorder_threshold,
   on public.items to authenticated;
 grant select on public.movements  to authenticated;
 grant select on public.profiles   to authenticated;
-grant select (id, item_id, seq, manufacturer, manufacturing_year, status, job_id, created_at, updated_at)
+grant select (id, item_id, seq, manufacturer, manufacturing_date, status, job_id, created_at, updated_at)
   on public.units to authenticated;
 grant select on public.jobs       to authenticated;
 grant select on public.categories to authenticated;
@@ -876,7 +899,7 @@ grant insert, update on public.jobs to authenticated;
 
 -- Cost and maker are editable directly. Status and job_id are deliberately
 -- absent — those move only through apply_movement.
-grant update (unit_cost, manufacturer, manufacturing_year, updated_at)
+grant update (unit_cost, manufacturer, manufacturing_date, updated_at)
   on public.units to authenticated;
 
 -- `quantity` is NOT in this list — stock levels move only through apply_movement.
@@ -892,7 +915,8 @@ grant update (name, category, unit, reorder_threshold, unit_cost,
 -- of their own, so they stay private to the functions that use them.
 grant execute on function public.create_category(text, text) to authenticated;
 grant execute on function public.create_item(text, text, text, numeric, numeric, numeric, text) to authenticated;
-grant execute on function public.apply_movement(text, text, numeric, text, text, uuid, text[], numeric, text, int) to authenticated;
+grant execute on function public.apply_movement(text, text, numeric, text, text, text, uuid, text[], numeric, text, date) to authenticated;
+grant execute on function public.apply_movement_with_metadata(text, text, numeric, text, text, text, uuid, text[], numeric, text, date) to authenticated;
 grant execute on function public.delete_job(uuid) to authenticated;
 grant execute on function public.set_user_role(uuid, text) to authenticated;
 grant execute on function public.is_admin() to authenticated;

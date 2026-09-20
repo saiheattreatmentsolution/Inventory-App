@@ -30,10 +30,18 @@ drop function if exists public.set_user_role(uuid, text);
 drop function if exists public.delete_job(uuid);
 drop function if exists public.apply_movement(text, text, numeric, text, text, uuid, text[], numeric, text, int);
 drop function if exists public.apply_movement(text, text, numeric, text, text, uuid, text[], numeric, text);
+-- Historical supplier-invoice overloads.
+drop function if exists public.apply_movement(text, text, numeric, text, text, text, uuid, text[], numeric, text, int);
+drop function if exists public.apply_movement(text, text, numeric, text, text, text, uuid, text[], numeric, text, int, date);
+-- Current canonical movement function and stable app RPC.
+drop function if exists public.apply_movement(text, text, numeric, text, text, text, uuid, text[], numeric, text, date);
+drop function if exists public.apply_movement_with_metadata(text, text, numeric, text, text, text, uuid, text[], numeric, text, date);
+drop function if exists public.apply_movement_with_metadata(text, text, numeric, text, text, text, uuid, text[], numeric, text, int, date);
 drop function if exists public.create_item(text, text, text, numeric, numeric, numeric, text);
 drop function if exists public.create_category(text, text);
 drop function if exists public.mint_units(text, int, numeric, text, int);
 drop function if exists public.mint_units(text, int, numeric, text);
+drop function if exists public.mint_units(text, int, numeric, text, date);
 drop function if exists public.items_keep_tracking_honest();
 drop function if exists public.current_actor();
 drop function if exists public.next_item_id(text);

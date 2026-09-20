@@ -38,6 +38,23 @@ export function dateOnly(iso: string): string {
   });
 }
 
+export function formatDateInput(iso: string | null): string {
+  if (!iso) return "";
+  const match = iso.slice(0, 10).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return match ? `${match[3]}-${match[2]}-${match[1]}` : "";
+}
+
+export function parseDateInput(value: string): string | null {
+  const match = value.trim().match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (!match) return null;
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+  const year = Number(match[3]);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return null;
+  return `${match[3]}-${match[2]}-${match[1]}`;
+}
+
 export function relative(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.round(diff / 60000);

@@ -4,22 +4,19 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Unit } from "@/lib/types";
 import { useStore } from "@/lib/store";
-import { money } from "@/lib/format";
+import { formatDateInput, money, parseDateInput } from "@/lib/format";
 import { Button, Empty, ItemId } from "@/components/ui";
 import { UnitStatusBadge } from "@/components/UnitPicker";
 
-type Row = { manufacturer: string; unit_cost: string; year: string };
+type Row = { manufacturer: string; unit_cost: string; date: string };
 
 const toRow = (u: Unit): Row => ({
   manufacturer: u.manufacturer ?? "",
   unit_cost: u.unit_cost === null ? "" : String(u.unit_cost),
-  year: u.manufacturing_year === null ? "" : String(u.manufacturing_year),
+  date: formatDateInput(u.manufacturing_date),
 });
 
-// Matches the check constraint on units.manufacturing_year.
-const YEAR_MIN = 1950;
-const YEAR_MAX = 2100;
-const badYear = (y: string) => y !== "" && !(Number(y) >= YEAR_MIN && Number(y) <= YEAR_MAX);
+const badDate = (date: string) => date !== "" && parseDateInput(date) === null;
 
 /**
  * Every physical unit of a product, with who made it, when, and what it cost.
@@ -39,7 +36,7 @@ export function UnitsEditor({
   const { units: allUnits, updateUnits } = useStore();
   const [editing, setEditing] = useState(false);
   const [rows, setRows] = useState<Record<string, Row>>({});
-  const [fill, setFill] = useState({ manufacturer: "", unit_cost: "", year: "" });
+  const [fill, setFill] = useState({ manufacturer: "", unit_cost: "", date: "" });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -55,7 +52,7 @@ export function UnitsEditor({
 
   const start = () => {
     setRows(Object.fromEntries(units.map((u) => [u.id, toRow(u)])));
-    setFill({ manufacturer: "", unit_cost: "", year: "" });
+    setFill({ manufacturer: "", unit_cost: "", date: "" });
     setErr(null);
     setEditing(true);
   };
@@ -72,7 +69,7 @@ export function UnitsEditor({
             ...row,
             manufacturer: fill.manufacturer || row.manufacturer,
             unit_cost: fill.unit_cost || row.unit_cost,
-            year: fill.year || row.year,
+            date: fill.date || row.date,
           },
         ]),
       ),
@@ -81,8 +78,8 @@ export function UnitsEditor({
   const badCost = Object.values(rows).some(
     (r) => r.unit_cost !== "" && (Number.isNaN(Number(r.unit_cost)) || Number(r.unit_cost) < 0),
   );
-  const badYears = Object.values(rows).some((r) => badYear(r.year));
-  const invalid = badCost || badYears;
+  const badDates = Object.values(rows).some((r) => badDate(r.date));
+  const invalid = badCost || badDates;
 
   const save = async () => {
     const changed = units.filter((u) => {
@@ -91,7 +88,7 @@ export function UnitsEditor({
       return (
         r.manufacturer.trim() !== before.manufacturer ||
         r.unit_cost !== before.unit_cost ||
-        r.year !== before.year
+        r.date !== before.date
       );
     });
     if (changed.length === 0) {
@@ -108,7 +105,7 @@ export function UnitsEditor({
             id: u.id,
             manufacturer: r.manufacturer.trim() || null,
             unit_cost: r.unit_cost === "" ? null : Number(r.unit_cost),
-            manufacturing_year: r.year === "" ? null : Number(r.year),
+            manufacturing_date: parseDateInput(r.date),
           };
         }),
       );
@@ -134,7 +131,7 @@ export function UnitsEditor({
               <span className="min-w-0 flex-1 truncate text-xs text-muted">
                 {[
                   u.manufacturer,
-                  u.manufacturing_year ? `made ${u.manufacturing_year}` : null,
+                  u.manufacturing_date ? `made ${formatDateInput(u.manufacturing_date)}` : null,
                   u.status === "at_job" ? `at ${jobName(u.job_id)}` : null,
                 ]
                   .filter(Boolean)
@@ -153,7 +150,7 @@ export function UnitsEditor({
         {canEdit && (
           <div className="border-t border-line px-4 py-3">
             <Button variant="secondary" onClick={start}>
-              Edit maker, year and cost
+              Edit maker, manufacturing date and cost
             </Button>
           </div>
         )}
@@ -170,7 +167,7 @@ export function UnitsEditor({
       </datalist>
 
       <div className="flex flex-wrap items-end gap-2 border-b border-line bg-steel-50 px-4 py-3">
-        <div className="min-w-40 flex-1">
+        <div className="w-full max-w-xl flex-1">
           <label className="label" htmlFor="fill-maker">
             Maker for every unit
           </label>
@@ -198,23 +195,22 @@ export function UnitsEditor({
         </div>
         <div className="w-28">
           <label className="label" htmlFor="fill-year">
-            Year for every unit
+            Manufacturing date for every unit
           </label>
           <input
-            id="fill-year"
+            id="fill-date"
             className="field num"
-            type="number"
-            min={YEAR_MIN}
-            max={YEAR_MAX}
-            step={1}
-            value={fill.year}
-            onChange={(e) => setFill({ ...fill, year: e.target.value })}
+            type="text"
+            inputMode="numeric"
+            placeholder="dd-mm-yyyy"
+            value={fill.date}
+            onChange={(e) => setFill({ ...fill, date: e.target.value })}
           />
         </div>
         <Button
           variant="secondary"
           onClick={fillAll}
-          disabled={!fill.manufacturer && !fill.unit_cost && !fill.year}
+          disabled={!fill.manufacturer && !fill.unit_cost && !fill.date}
         >
           Fill every unit
         </Button>
@@ -224,7 +220,7 @@ export function UnitsEditor({
         {units.map((u) => {
           const r = rows[u.id];
           return (
-            <li key={u.id} className="grid gap-2 px-4 py-3 sm:grid-cols-[auto_1fr_6rem_8rem] sm:items-center">
+            <li key={u.id} className="grid gap-2 px-4 py-3 sm:grid-cols-[auto_minmax(12rem,28rem)_8rem_8rem] sm:items-center">
               <div className="flex items-center gap-2">
                 <ItemId id={u.id} />
                 <UnitStatusBadge status={u.status} />
@@ -239,15 +235,13 @@ export function UnitsEditor({
               />
 
               <input
-                aria-label={`Year ${u.id} was made`}
-                className={`field num ${badYear(r.year) ? "border-danger-500" : ""}`}
-                type="number"
-                min={YEAR_MIN}
-                max={YEAR_MAX}
-                step={1}
-                placeholder="Year"
-                value={r.year}
-                onChange={(e) => setRow(u.id, { year: e.target.value })}
+                aria-label={`Manufacturing date of ${u.id}`}
+                className={`field ${badDate(r.date) ? "border-danger-500" : ""}`}
+                type="text"
+                inputMode="numeric"
+                placeholder="dd-mm-yyyy"
+                value={r.date}
+                onChange={(e) => setRow(u.id, { date: e.target.value })}
               />
 
               <input
@@ -279,9 +273,9 @@ export function UnitsEditor({
           Cancel
         </Button>
         {badCost && <span className="text-[11px] text-danger-600">A cost is not a valid amount.</span>}
-        {badYears && (
+        {badDates && (
           <span className="text-[11px] text-danger-600">
-            A year must be between {YEAR_MIN} and {YEAR_MAX}.
+            A manufacturing date is not valid.
           </span>
         )}
       </div>

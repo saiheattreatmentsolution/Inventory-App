@@ -30,7 +30,7 @@ type MovementInput = {
   /** On new stock: price per unit, who made it, and when (serialized only). */
   unit_cost?: number | null;
   manufacturer?: string;
-  manufacturing_year?: number | null;
+  manufacturing_date?: string | null;
 };
 
 export type JobInput = { name: string; site: string; customer: string; notes: string };
@@ -47,7 +47,7 @@ type UnitPatch = {
   id: string;
   unit_cost: number | null;
   manufacturer: string | null;
-  manufacturing_year: number | null;
+  manufacturing_date: string | null;
 };
 
 type Snapshot = {
@@ -65,7 +65,7 @@ type Snapshot = {
 export const ITEM_COLUMNS =
   "id, name, category, unit, tracking, quantity, reorder_threshold, notes, archived_at, created_at, updated_at";
 export const UNIT_COLUMNS =
-  "id, item_id, seq, manufacturer, manufacturing_year, status, job_id, created_at, updated_at";
+  "id, item_id, seq, manufacturer, manufacturing_date, status, job_id, created_at, updated_at";
 
 type CostRow = { id: string; unit_cost: number | null };
 
@@ -207,7 +207,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const applyMovement = useCallback(
     async (input: MovementInput) => {
-      const { data, error: rpcError } = await supabase.rpc("apply_movement", {
+      const { data, error: rpcError } = await supabase.rpc("apply_movement_with_metadata", {
         p_item_id: input.item_id,
         p_type: input.type,
         p_quantity: input.quantity,
@@ -218,7 +218,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         p_unit_ids: input.unit_ids ?? [],
         p_unit_cost: input.unit_cost ?? null,
         p_manufacturer: input.manufacturer?.trim() || null,
-        p_year: input.manufacturing_year ?? null,
+        p_manufacturing_date: input.manufacturing_date ?? null,
       });
       if (rpcError) throw new Error(rpcError.message);
       await refresh();
@@ -302,7 +302,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             .update({
               unit_cost: p.unit_cost,
               manufacturer: p.manufacturer,
-              manufacturing_year: p.manufacturing_year,
+              manufacturing_date: p.manufacturing_date,
               updated_at: now,
             })
             .eq("id", p.id),

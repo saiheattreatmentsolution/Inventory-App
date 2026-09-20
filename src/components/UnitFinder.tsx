@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
-import { money } from "@/lib/format";
+import { formatDateInput, money } from "@/lib/format";
 import { Empty, ItemId } from "@/components/ui";
 import { UnitStatusBadge } from "@/components/UnitPicker";
 
@@ -81,7 +81,7 @@ export function UnitFinder({ onClose }: { onClose: () => void }) {
                 const facts = [
                   u.status === "at_job" ? `At ${jobName(u.job_id)}` : null,
                   u.manufacturer,
-                  u.manufacturing_year ? `Made ${u.manufacturing_year}` : null,
+                  u.manufacturing_date ? `Made ${formatDateInput(u.manufacturing_date)}` : null,
                   isAdmin && u.unit_cost !== null ? money(u.unit_cost) : null,
                 ].filter(Boolean);
                 return (

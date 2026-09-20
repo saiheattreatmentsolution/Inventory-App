@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import { useStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
 import { UNIT_STATUS_LABEL } from "@/lib/types";
-import { dateOnly, dateTime, money, qty, signed } from "@/lib/format";
+import { dateOnly, dateTime, formatDateInput, money, qty, signed } from "@/lib/format";
 import { Card, SectionTitle, ItemId, TypeBadge, Spinner, Empty } from "@/components/ui";
 import { UnitStatusBadge } from "@/components/UnitPicker";
 
@@ -73,7 +73,11 @@ export default function UnitDetailPage() {
             value={unit.status === "at_job" ? jobName(unit.job_id) : UNIT_STATUS_LABEL[unit.status]}
           />
           <Fact label="Made by" value={unit.manufacturer ?? "—"} />
-          <Fact label="Year made" value={unit.manufacturing_year ? String(unit.manufacturing_year) : "—"} mono />
+          <Fact
+            label="Manufacturing date"
+            value={formatDateInput(unit.manufacturing_date) || "—"}
+            mono
+          />
           {isAdmin && <Fact label="Cost" value={money(unit.unit_cost)} mono />}
           <Fact label="On record since" value={dateOnly(unit.created_at)} />
           <Fact label="Last moved" value={dateTime(unit.updated_at)} />
