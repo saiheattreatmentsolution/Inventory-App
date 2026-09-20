@@ -33,49 +33,72 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { isAdmin } = useAuth();
   const nav = NAV.filter((n) => !n.adminOnly || isAdmin);
 
-  return (
-    <div className="min-h-dvh">
-      <header className="elevated sticky top-0 z-30 bg-steel-900 text-white">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-2.5">
-          <Link href="/" className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded bg-rust-500 text-sm font-bold">
-              SG
-            </span>
-            <span className="leading-tight">
-              <span className="block text-sm font-semibold">Sai Group inventory</span>
-              <span className="hidden text-[11px] text-steel-200 sm:block">
-                Heat treatment &amp; PWHT equipment store
-              </span>
-            </span>
-          </Link>
+  const current = nav.find((n) => isActive(pathname, n.href));
 
-          <nav className="ml-6 hidden items-center gap-1 md:flex">
-            {nav.map((n) => (
+  return (
+    <div className="min-h-dvh md:flex">
+      {/* Rail — fixed on desktop, so long tables scroll under a steady nav. */}
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-sidebar-line bg-sidebar md:flex">
+        <Link href="/" className="flex items-center gap-2.5 px-4 py-4">
+          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-rust-500 text-sm font-bold text-white">
+            SG
+          </span>
+          <span className="leading-tight">
+            <span className="block text-sm font-semibold text-sidebar-fg">Sai Group</span>
+            <span className="block text-[11px] text-muted">Inventory</span>
+          </span>
+        </Link>
+
+        <nav className="flex flex-1 flex-col gap-0.5 px-3 py-2">
+          {nav.map((n) => {
+            const active = isActive(pathname, n.href);
+            const Icon = n.icon;
+            return (
               <Link
                 key={n.href}
                 href={n.href}
-                className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                  isActive(pathname, n.href)
-                    ? "bg-white/12 text-white"
-                    : "text-steel-200 hover:bg-white/8 hover:text-white"
+                aria-current={active ? "page" : undefined}
+                className={`flex items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium transition-colors ${
+                  active
+                    ? "bg-sidebar-accent text-sidebar-accent-fg"
+                    : "text-muted hover:bg-sidebar-accent/60 hover:text-sidebar-fg"
                 }`}
               >
+                <Icon active={active} />
                 {n.label}
               </Link>
-            ))}
-          </nav>
+            );
+          })}
+        </nav>
 
-          <div className="ml-auto">
+        <div className="border-t border-sidebar-line p-3">
+          <UserMenu align="up" />
+        </div>
+      </aside>
+
+      <div className="flex min-w-0 flex-1 flex-col md:pl-60">
+        {/* Slim bar: page name on desktop, brand and account on phones. */}
+        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-line bg-paper/80 px-4 py-3 backdrop-blur md:px-6">
+          <Link href="/" className="flex items-center gap-2 md:hidden">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-rust-500 text-xs font-bold text-white">
+              SG
+            </span>
+          </Link>
+          <h1 className="truncate text-base font-semibold text-ink">
+            {current?.label ?? "Sai Group inventory"}
+          </h1>
+          <div className="ml-auto md:hidden">
             <UserMenu />
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="mx-auto max-w-7xl px-4 pb-24 pt-4 md:pb-10">{children}</main>
+        <main className="min-w-0 flex-1 px-4 pb-24 pt-4 md:px-6 md:pb-8 md:pt-6">{children}</main>
+      </div>
 
-      {/* Mobile tab bar — thumb-reachable on the shop floor. */}
+      {/* Mobile tab bar — thumb-reachable on the shop floor, where a side rail
+          would cost a tap to open every time. */}
       <nav
-        className="elevated-pop fixed inset-x-0 bottom-0 z-30 grid border-t border-line bg-card md:hidden"
+        className="surface-pop fixed inset-x-0 bottom-0 z-30 grid rounded-none border-t border-line md:hidden"
         style={{ gridTemplateColumns: `repeat(${nav.length}, minmax(0, 1fr))` }}
       >
         {nav.map((n) => {
@@ -99,7 +122,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   );
 }
 
-function UserMenu() {
+function UserMenu({ align = "down" }: { align?: "up" | "down" }) {
   const { profile, session, signOut, isAdmin, setDisplayName } = useAuth();
   const [open, setOpen] = useState(false);
   const [finding, setFinding] = useState(false);
@@ -123,15 +146,17 @@ function UserMenu() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 rounded-md border border-white/20 px-2.5 py-1.5 text-xs text-steel-100 hover:bg-white/10"
+        className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-muted transition-colors hover:bg-sidebar-accent ${
+          align === "up" ? "" : "border border-line"
+        }`}
       >
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-steel-500 text-[10px] font-bold text-on-primary">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-steel-600 text-[10px] font-bold text-on-primary">
           {initial}
         </span>
-        <span className="hidden max-w-32 truncate sm:inline">{name}</span>
+        <span className="hidden min-w-0 flex-1 truncate text-left text-ink sm:inline">{name}</span>
         <span
-          className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
-            isAdmin ? "bg-rust-500 text-white" : "bg-white/15 text-steel-100"
+          className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ${
+            isAdmin ? "bg-rust-50 text-rust-600" : "bg-steel-50 text-muted"
           }`}
         >
           {isAdmin ? "Admin" : "Viewer"}
@@ -139,7 +164,11 @@ function UserMenu() {
       </button>
 
       {open && (
-        <div className="elevated-pop absolute right-0 z-40 mt-1.5 w-56 rounded-xl border border-line bg-card py-1">
+        <div
+          className={`surface-pop absolute z-40 w-56 py-1 ${
+            align === "up" ? "bottom-full left-0 mb-1.5" : "right-0 mt-1.5"
+          }`}
+        >
           <div className="border-b border-line px-3 py-2">
             {editingName ? (
               <form

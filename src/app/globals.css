@@ -3,14 +3,16 @@
 /* --------------------------------------------------------------------------
    Sai Group inventory — theme.
 
-   Every colour the app uses is a CSS variable, defined once for light and once
-   for dark below. The @theme block maps Tailwind's utility names onto those
-   variables, so `bg-card`, `text-ink`, `text-ok-600` and the rest keep working
-   exactly as before and simply follow whichever theme is active. That is why
-   switching themes needs no change in any component.
+   Palette, radius, spacing and type follow portfolio.dks189.vercel.app: both
+   colour sets below are that site's own, so light and dark match it exactly.
 
-   Surfaces float: cards sit on the page with a soft shadow rather than being
-   marked out by a heavy border, which is what gives the layout its depth.
+   Every colour resolves through a CSS variable, and the @theme block maps
+   Tailwind's utility names onto them. That is why `bg-card`, `text-ink`,
+   `text-ok-600` and the rest keep working unchanged across ~620 usages while
+   following whichever theme is active.
+
+   Surfaces float on a hairline ring plus a whisper of shadow — depth comes
+   from the ring, not from a heavy drop shadow.
    -------------------------------------------------------------------------- */
 
 @custom-variant dark (&:is(.dark *));
@@ -22,26 +24,31 @@
   --color-line: var(--border);
   --color-line-strong: var(--input);
 
+  /* The left navigation rail. */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-fg: var(--sidebar-foreground);
+  --color-sidebar-line: var(--sidebar-border);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-fg: var(--sidebar-accent-foreground);
+
   /* Text */
   --color-ink: var(--foreground);
   --color-muted: var(--muted-foreground);
 
-  /* Primary ramp. steel-600 is the action colour: buttons, links, active tabs.
-     steel-900 is the app bar, dark in both themes. */
-  --color-steel-50: var(--surface-subtle);
+  /* Primary ramp. steel-600 is the action colour: buttons, links, active nav. */
+  --color-steel-50: var(--accent);
   --color-steel-100: var(--ring-soft);
   --color-steel-200: var(--neutral-mid);
   --color-steel-400: var(--primary-soft);
   --color-steel-500: var(--primary);
   --color-steel-600: var(--primary);
   --color-steel-700: var(--primary-hover);
-  --color-steel-900: var(--header);
+  --color-steel-900: var(--ink-deep);
 
-  /* Text that sits ON the primary colour. White on light, near-black on dark —
-     #667fff is too bright to carry white text at the size buttons use. */
+  /* Text that sits ON the primary colour — white on light, near-black on dark. */
   --color-on-primary: var(--primary-foreground);
 
-  /* The warm accent: the SG badge and the "heat" side of the business. */
+  /* Warm accent: the SG badge and "stock out" movements. */
   --color-rust-50: var(--accent-warm-50);
   --color-rust-100: var(--accent-warm-100);
   --color-rust-500: var(--accent-warm-500);
@@ -50,7 +57,7 @@
   /* Status ramp. -50 is a tint background, -500 a solid fill, -600 text.
      Every status also carries a written label — never colour alone. */
   --color-ok-50: var(--gain-50);
-  --color-ok-500: var(--gain-500);
+  --color-ok-500: var(--gain);
   --color-ok-600: var(--gain-600);
   --color-warn-50: var(--warn-50);
   --color-warn-500: var(--warn-500);
@@ -59,72 +66,84 @@
   --color-alert-500: var(--alert-500);
   --color-alert-600: var(--alert-600);
   --color-danger-50: var(--loss-50);
-  --color-danger-500: var(--loss-500);
+  --color-danger-500: var(--loss);
   --color-danger-600: var(--loss-600);
 
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  /* Charts, for when the dashboard grows one. */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-barlow), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
 }
 
 /* ---------------------------------------------------------------- light --- */
-/* White cards floating on a cool grey page. The indigo is darkened from the
-   dark theme's #667fff so it still reads as text and as a button on white. */
 :root {
-  --background: #f4f6fb;
-  --foreground: #141821;
+  --background: #f9fbfe;
+  --foreground: #2a394e;
   --card: #ffffff;
-  --card-foreground: #141821;
+  --card-foreground: #2a394e;
   --popover: #ffffff;
-  --popover-foreground: #141821;
-  --primary: #3d4fd1;
-  --primary-hover: #3240ac;
-  --primary-soft: #8b97e8;
+  --popover-foreground: #2a394e;
+  --primary: #3f5bd9;
   --primary-foreground: #ffffff;
-  --secondary: #eef1f7;
-  --secondary-foreground: #141821;
-  --muted: #eef1f7;
-  --muted-foreground: #5b6675;
-  --accent: #eaedfb;
-  --accent-foreground: #3d4fd1;
-  --destructive: #cf2f2f;
-  --border: #e3e7ef;
-  --input: #ccd3e0;
-  --ring: #3d4fd1;
-
-  --surface-subtle: #eef1f7;
-  --ring-soft: #dde3f8;
-  --neutral-mid: #bcc6d6;
-  --header: #171c30;
-  --placeholder: #93a0b2;
-
-  --gain: #0b7a6b;
-  --loss: #cf2f2f;
-  --gain-50: #e6f5f2;
-  --gain-500: #0b7a6b;
-  --gain-600: #0a6a5d;
-  --warn-50: #fdf4e3;
-  --warn-500: #c9922a;
-  --warn-600: #7d5a06;
-  --alert-50: #fdeee4;
-  --alert-500: #d2601a;
-  --alert-600: #a8410a;
-  --loss-50: #fdecec;
-  --loss-500: #cf2f2f;
-  --loss-600: #b32020;
-
-  --accent-warm-50: #fdf0e7;
-  --accent-warm-100: #fadfcd;
-  --accent-warm-500: #c85f22;
-  --accent-warm-600: #a94e1a;
-
-  --chart-1: #3d4fd1;
-  --chart-2: #0ea5e9;
-  --chart-3: #0b7a6b;
-  --chart-4: #e2661f;
+  --secondary: #e3ebf6;
+  --secondary-foreground: #2a394e;
+  --muted: #eef2f9;
+  --muted-foreground: #5d6775;
+  --accent: #edf0fc;
+  --accent-foreground: #3f5bd9;
+  --destructive: #d92d20;
+  --border: #e0e0ec;
+  --input: #d5d8e6;
+  --ring: #3f5bd9;
+  --gain: #15803d;
+  --loss: #d92d20;
+  --chart-1: #3f5bd9;
+  --chart-2: #12a4f5;
+  --chart-3: #50ac57;
+  --chart-4: #ff7300;
   --chart-5: #8b5cf6;
+  --radius: 0.375rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #2a394e;
+  --sidebar-primary: #3f5bd9;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #edf0fc;
+  --sidebar-accent-foreground: #3f5bd9;
+  --sidebar-border: #e0e0ec;
+  --sidebar-ring: #3f5bd9;
 
-  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 14px rgba(16, 24, 40, 0.07);
-  --shadow-pop: 0 4px 10px rgba(16, 24, 40, 0.08), 0 12px 32px rgba(16, 24, 40, 0.12);
+  /* Derived, for the ramps the app already uses. */
+  --primary-hover: #3349b4;
+  --primary-soft: #8fa0e8;
+  --ring-soft: #dde4fa;
+  --neutral-mid: #bcc4d4;
+  --ink-deep: #1e293b;
+  --placeholder: #97a0ae;
+
+  --gain-50: #e9f6ee;
+  --gain-600: #15803d;
+  --warn-50: #fdf5e6;
+  --warn-500: #c98a12;
+  --warn-600: #8a5d05;
+  --alert-50: #fff1e5;
+  --alert-500: #ff7300;
+  --alert-600: #b34f00;
+  --loss-50: #fdecea;
+  --loss-600: #b4241a;
+
+  --accent-warm-50: #fff1e5;
+  --accent-warm-100: #ffe0c7;
+  --accent-warm-500: #e26200;
+  --accent-warm-600: #b34f00;
 }
 
 /* ----------------------------------------------------------------- dark --- */
@@ -136,8 +155,6 @@
   --popover: #1a1a1a;
   --popover-foreground: #f0f0f0;
   --primary: #667fff;
-  --primary-hover: #7c90ff;
-  --primary-soft: #4a5fd8;
   --primary-foreground: #0d0d0d;
   --secondary: #1a1a1a;
   --secondary-foreground: #f0f0f0;
@@ -149,17 +166,30 @@
   --border: #262626;
   --input: #2e2e2e;
   --ring: #667fff;
-
-  --surface-subtle: #1a1a1a;
-  --ring-soft: #23304d;
-  --neutral-mid: #8a8f98;
-  --header: #0d0d0d;
-  --placeholder: #7a7a7a;
-
   --gain: #3fb0a5;
   --loss: #fa6464;
+  --chart-1: #667fff;
+  --chart-2: #38bdf8;
+  --chart-3: #3fb0a5;
+  --chart-4: #ff9a3d;
+  --chart-5: #a78bfa;
+  --sidebar: #0d0d0d;
+  --sidebar-foreground: #f0f0f0;
+  --sidebar-primary: #667fff;
+  --sidebar-primary-foreground: #0d0d0d;
+  --sidebar-accent: #1c2533;
+  --sidebar-accent-foreground: #8c9dff;
+  --sidebar-border: #262626;
+  --sidebar-ring: #667fff;
+
+  --primary-hover: #7c90ff;
+  --primary-soft: #4a5fd8;
+  --ring-soft: #23304d;
+  --neutral-mid: #8a8f98;
+  --ink-deep: #0d0d0d;
+  --placeholder: #7a7a7a;
+
   --gain-50: #12211f;
-  --gain-500: #3fb0a5;
   --gain-600: #4fc2b6;
   --warn-50: #241d0f;
   --warn-500: #e0a63c;
@@ -168,22 +198,12 @@
   --alert-500: #ff9a3d;
   --alert-600: #ffab5c;
   --loss-50: #251314;
-  --loss-500: #fa6464;
   --loss-600: #ff7b7b;
 
   --accent-warm-50: #26190f;
   --accent-warm-100: #3a2716;
   --accent-warm-500: #b8560f;
   --accent-warm-600: #ff9a3d;
-
-  --chart-1: #667fff;
-  --chart-2: #38bdf8;
-  --chart-3: #3fb0a5;
-  --chart-4: #ff9a3d;
-  --chart-5: #a78bfa;
-
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.55), 0 6px 18px rgba(0, 0, 0, 0.45);
-  --shadow-pop: 0 6px 16px rgba(0, 0, 0, 0.6), 0 16px 40px rgba(0, 0, 0, 0.55);
 }
 
 html {
@@ -211,29 +231,38 @@ body {
     font-family: var(--font-mono);
   }
 
-  /* The floating surface: cards, menus and the tab bar all sit above the page
-     rather than being fenced off by a border. */
-  .elevated {
-    box-shadow: var(--shadow-card);
+  /* The floating surface. Depth is a hairline ring plus the faintest shadow —
+     the ring does the separating, the shadow only lifts it off the page. */
+  .surface {
+    background: var(--card);
+    border-radius: calc(var(--radius) + 4px);
+    box-shadow:
+      0 0 0 1px var(--border),
+      0 1px 2px 0 rgb(0 0 0 / 0.05);
   }
-  .elevated-pop {
-    box-shadow: var(--shadow-pop);
+  .surface-pop {
+    background: var(--popover);
+    border-radius: calc(var(--radius) + 4px);
+    box-shadow:
+      0 0 0 1px var(--border),
+      0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1);
   }
 
   /* Shared control styling — one look for every input on every page. */
   .field {
     width: 100%;
     border: 1px solid var(--input);
-    background: var(--card);
-    border-radius: 0.5rem;
-    padding: 0.5rem 0.625rem;
+    background: transparent;
+    border-radius: var(--radius);
+    padding: 0.375rem 0.625rem;
     font-size: 0.875rem;
     color: var(--foreground);
     outline: none;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
   .field:focus {
-    border-color: var(--primary);
+    border-color: var(--ring);
     box-shadow: 0 0 0 3px var(--ring-soft);
   }
   .field::placeholder {
@@ -250,10 +279,10 @@ body {
 
   .label {
     display: block;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--muted-foreground);
-    margin-bottom: 0.3rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--foreground);
+    margin-bottom: 0.375rem;
   }
 
   /* Hide the scrollbar on the horizontal chip rows, keep the scrolling. */

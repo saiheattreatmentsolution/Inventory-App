@@ -87,7 +87,7 @@ export function ThemeToggle() {
             type="button"
             onClick={() => choose(o.value)}
             className={`flex-1 rounded-md px-2 py-1 text-xs font-semibold transition-colors ${
-              theme === o.value ? "elevated bg-card text-ink" : "text-muted hover:text-ink"
+              theme === o.value ? "bg-card text-ink shadow-xs" : "text-muted hover:text-ink"
             }`}
           >
             {o.label}
