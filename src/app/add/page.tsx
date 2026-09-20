@@ -113,9 +113,15 @@ function AddItemForm() {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="label" htmlFor="category">
-                Category
-              </label>
+              {/* Points at the select, which is not rendered while the new
+                  category fields are open — those carry their own labels. */}
+              {addingCategory ? (
+                <span className="label">Category</span>
+              ) : (
+                <label className="label" htmlFor="category">
+                  Category
+                </label>
+              )}
               {addingCategory ? (
                 <NewCategoryForm
                   onCreated={(name) => {

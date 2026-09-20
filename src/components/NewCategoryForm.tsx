@@ -28,9 +28,8 @@ export function NewCategoryForm({
     categories.some((c) => c.name.toLowerCase() === name.trim().toLowerCase()) ||
     categories.some((c) => c.code === codeValue);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || codeInvalid || codeValue === "") return;
+  const submit = async () => {
+    if (!name.trim() || codeInvalid || codeValue === "" || taken || busy) return;
     setBusy(true);
     setErr(null);
     try {
@@ -45,8 +44,21 @@ export function NewCategoryForm({
     }
   };
 
+  // Enter would otherwise submit whichever form this sits inside — on Add
+  // item, that is the create-the-product form, which is not what someone
+  // typing a category name is asking for.
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    void submit();
+  };
+
+  // Deliberately a div, not a form: this is rendered inside the Add item
+  // page's own form, and a form nested in a form is invalid HTML that the
+  // browser silently discards — which detaches the button below from its
+  // handler and hands it to the outer form instead.
   return (
-    <form onSubmit={submit} className="flex flex-wrap items-end gap-2">
+    <div className="flex flex-wrap items-end gap-2">
       <div className="min-w-40 flex-1">
         <label className="label" htmlFor="new-category-name">
           Category name
@@ -55,8 +67,10 @@ export function NewCategoryForm({
           id="new-category-name"
           className="field"
           autoFocus
+          autoComplete="off"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          onKeyDown={onKeyDown}
           placeholder="Refractory materials"
         />
       </div>
@@ -68,12 +82,18 @@ export function NewCategoryForm({
           id="new-category-code"
           className="field num uppercase"
           maxLength={3}
+          autoComplete="off"
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
+          onKeyDown={onKeyDown}
           placeholder="REF"
         />
       </div>
-      <Button type="submit" disabled={busy || !name.trim() || codeValue === "" || codeInvalid || taken}>
+      <Button
+        type="button"
+        onClick={submit}
+        disabled={busy || !name.trim() || codeValue === "" || codeInvalid || taken}
+      >
         {busy ? "Adding…" : "Add category"}
       </Button>
       {onCancel && (
@@ -90,6 +110,6 @@ export function NewCategoryForm({
         The code becomes the item-ID prefix (<span className="num">SAI-{codeValue || "XXX"}-001</span>) and cannot
         be changed afterwards.
       </p>
-    </form>
+    </div>
   );
 }
