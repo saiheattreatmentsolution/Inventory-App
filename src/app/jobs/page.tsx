@@ -85,7 +85,7 @@ export default function JobsPage() {
   if (loading) return <Spinner />;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-4">
+    <div className="max-w-5xl space-y-3">
       <PageHead
         title="Jobs"
         subtitle="Sites your equipment goes out to"
@@ -147,7 +147,7 @@ export default function JobsPage() {
                         className={`rounded border px-1.5 py-0.5 text-[11px] font-semibold ${
                           job.status === "active"
                             ? "border-ok-500/25 bg-ok-50 text-ok-600"
-                            : "border-line bg-steel-50 text-muted"
+                            : "border-line bg-neutral-surface text-muted"
                         }`}
                       >
                         {job.status === "active" ? "Active" : "Closed"}

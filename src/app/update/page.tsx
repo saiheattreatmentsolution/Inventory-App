@@ -309,7 +309,7 @@ function UpdateStockView() {
   if (loading) return <Spinner />;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
+    <div className="max-w-4xl space-y-3">
       <PageHead title="Update stock" subtitle="Receive, dispatch or correct a balance" />
 
       {done && (
@@ -763,7 +763,7 @@ function UpdateStockView() {
               </div>
 
               {/* Current → projected, so a slip is caught before it is saved. */}
-              <div className="flex items-center gap-3 rounded-md border border-line bg-steel-50 px-3 py-2.5">
+              <div className="flex items-center gap-3 rounded-md border border-line bg-neutral-surface px-3 py-2.5">
                 <div>
                   <p className="text-[11px] text-muted">In store now</p>
                   <p className="num text-lg font-semibold text-ink">{qty(selected.quantity)}</p>

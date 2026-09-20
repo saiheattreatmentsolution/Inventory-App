@@ -80,7 +80,7 @@ function AddItemForm() {
   if (!configured) return null;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
+    <div className="max-w-4xl space-y-3">
       <PageHead title="Add item" subtitle="Creates the product record and logs its opening stock" />
 
       <form onSubmit={submit}>

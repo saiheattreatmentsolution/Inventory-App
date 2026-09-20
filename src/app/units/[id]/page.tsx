@@ -45,7 +45,7 @@ export default function UnitDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4">
+    <div className="max-w-4xl space-y-3">
       <Link
         href={`/inventory/${unit.item_id}`}
         className="inline-flex items-center gap-1 text-xs font-semibold text-steel-600 hover:underline"

@@ -4,7 +4,9 @@ import { StockStatus, STATUS_LABEL } from "@/lib/types";
 
 const STATUS_STYLES: Record<StockStatus, string> = {
   in_stock: "bg-ok-50 text-ok-600 border-ok-500/25",
-  none: "bg-steel-50 text-muted border-line-strong",
+  // Neutral on purpose: nothing in store is only news when a minimum is set,
+  // and a brand-tinted chip would read as an alert.
+  none: "bg-neutral-surface text-muted border-line-strong",
   low: "bg-warn-50 text-warn-600 border-warn-500/35",
   reorder: "bg-alert-50 text-alert-600 border-alert-500/30",
   out_of_stock: "bg-danger-50 text-danger-600 border-danger-500/25",
