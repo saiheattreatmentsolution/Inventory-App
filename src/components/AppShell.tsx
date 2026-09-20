@@ -33,18 +33,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { isAdmin } = useAuth();
   const nav = NAV.filter((n) => !n.adminOnly || isAdmin);
 
-  const current = nav.find((n) => isActive(pathname, n.href));
-
   return (
     <div className="min-h-dvh md:flex">
       {/* Rail — fixed on desktop, so long tables scroll under a steady nav. */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-sidebar-line bg-sidebar md:flex">
-        <Link href="/" className="flex items-center gap-2.5 px-4 py-4">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-rust-500 text-sm font-bold text-white">
-            SG
-          </span>
+        <Link href="/" className="flex items-center gap-2.5 px-3 py-4">
+          <img src="/Sai_logo_wbg.png" alt="" className="h-7 w-7" />
           <span className="leading-tight">
-            <span className="block text-sm font-semibold text-sidebar-fg">Sai Group</span>
+            <span className="block text-sm font-semibold text-sidebar-fg">Sai Heat Treament Solutions</span>
             <span className="block text-[11px] text-muted">Inventory</span>
           </span>
         </Link>
@@ -78,16 +74,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex min-w-0 flex-1 flex-col md:pl-60">
         {/* Slim bar: page name on desktop, brand and account on phones. */}
-        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-line bg-paper/80 px-4 py-3 backdrop-blur md:px-6">
-          <Link href="/" className="flex items-center gap-2 md:hidden">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-rust-500 text-xs font-bold text-white">
-              SG
+        <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-line bg-paper/80 px-4 py-3 backdrop-blur md:hidden">
+          <Link href="/" className="flex items-center gap-2 min-w-0">
+            <img src="/Sai_logo_wbg.png" alt="" className="h-7 w-7 shrink-0" />
+            <span className="truncate text-sm font-semibold text-ink md:hidden">
+              Sai Heat Treatment Solutions
             </span>
           </Link>
-          <h1 className="truncate text-base font-semibold text-ink">
-            {current?.label ?? "Sai Group inventory"}
-          </h1>
-          <div className="ml-auto md:hidden">
+          <div className="ml-auto">
             <UserMenu />
           </div>
         </header>
@@ -146,7 +140,7 @@ function UserMenu({ align = "down" }: { align?: "up" | "down" }) {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-muted transition-colors hover:bg-sidebar-accent ${
+        className={`flex w-full items-center gap-2 rounded-md border-1 border-sidebar-line px-2 py-1.5 text-xs text-muted transition-colors hover:bg-sidebar-accent ${
           align === "up" ? "" : "border border-line"
         }`}
       >
@@ -154,13 +148,6 @@ function UserMenu({ align = "down" }: { align?: "up" | "down" }) {
           {initial}
         </span>
         <span className="hidden min-w-0 flex-1 truncate text-left text-ink sm:inline">{name}</span>
-        <span
-          className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ${
-            isAdmin ? "bg-rust-50 text-rust-600" : "bg-steel-50 text-muted"
-          }`}
-        >
-          {isAdmin ? "Admin" : "Viewer"}
-        </span>
       </button>
 
       {open && (

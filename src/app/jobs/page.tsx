@@ -85,7 +85,7 @@ export default function JobsPage() {
   if (loading) return <Spinner />;
 
   return (
-    <div className="max-w-5xl space-y-3">
+    <div className="space-y-4">
       <PageHead
         title="Jobs"
         subtitle="Sites your equipment goes out to"

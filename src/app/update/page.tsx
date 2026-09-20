@@ -309,7 +309,7 @@ function UpdateStockView() {
   if (loading) return <Spinner />;
 
   return (
-    <div className="max-w-4xl space-y-3">
+    <div className="space-y-4">
       <PageHead title="Update stock" subtitle="Receive, dispatch or correct a balance" />
 
       {done && (
@@ -339,12 +339,12 @@ function UpdateStockView() {
           action={
             selected && (
               <button onClick={() => choose(null)} className="text-xs font-semibold text-steel-600 hover:underline">
-                Change item
+                Back
               </button>
             )
           }
         >
-          1 · Item
+        1 · Item
         </SectionTitle>
 
         {selected ? (
@@ -387,7 +387,7 @@ function UpdateStockView() {
               </div>
             )}
 
-            <ul className="mt-3 max-h-80 divide-y divide-line overflow-y-auto rounded-md border border-line">
+            <ul className="mt-3 divide-y divide-line overflow-y-auto rounded-md border border-line">
               {matches.length === 0 ? (
                 <li>
                   <Empty>

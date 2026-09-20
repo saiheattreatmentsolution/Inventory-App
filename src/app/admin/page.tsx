@@ -66,7 +66,7 @@ function People() {
   const adminCount = people.filter((p) => p.role === "admin").length;
 
   return (
-    <div className="max-w-4xl space-y-3">
+    <div className="space-y-4">
       <PageHead title="Manage people" subtitle="Who can sign in, and what they can do" />
 
       <Card>
