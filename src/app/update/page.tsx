@@ -67,6 +67,7 @@ function UpdateStockView() {
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("Purchase Restock");
   const [note, setNote] = useState("");
+  const [supplierInvoice, setSupplierInvoice] = useState("");
   const [unitCost, setUnitCost] = useState("");
   const [maker, setMaker] = useState("");
   const [year, setYear] = useState("");
@@ -99,6 +100,8 @@ function UpdateStockView() {
     setPickedUnits(null);
     setAmount("");
     setJobId("");
+    setSupplierInvoice("");
+    setNote("");
     setUnitCost("");
     setMaker("");
     setYear("");
@@ -110,6 +113,7 @@ function UpdateStockView() {
     setReason(item ? reasonsFor(next, item.tracking)[0] : "");
     setAmount("");
     setJobId("");
+    setSupplierInvoice("");
     setUnitCost("");
     setMaker("");
     setYear("");
@@ -189,18 +193,11 @@ function UpdateStockView() {
   const costed = isPurchase || builtInHouse;
   // Every entry can carry a note. An Adjust most of all: it moves the balance to
   // a number somebody typed, and the ledger should be able to say why.
-  const noteLabel =
-    type === "condition"
-      ? "What happened? (optional)"
-      : isPurchase
-        ? "Supplier invoice or PO number (optional)"
-        : "Note (optional)";
+  const noteLabel = type === "condition" ? "What happened? (optional)" : "Notes (optional)";
   const notePlaceholder =
     type === "condition"
       ? "Nozzle cracked on site"
-      : isPurchase
-        ? "PO-2291"
-        : builtInHouse
+      : builtInHouse
           ? "Built for the Vizag spread"
           : type === "adjust"
             ? "Recount after the shelf was reorganised"
@@ -282,6 +279,7 @@ function UpdateStockView() {
         quantity: serialized && !mintingNew ? 0 : entered,
         reason,
         note,
+        supplier_invoice: isPurchase ? supplierInvoice : "",
         job_id: showJob ? jobId || null : null,
         unit_ids: serialized && !mintingNew ? picked : [],
         unit_cost: costed ? costValue : null,
@@ -365,35 +363,45 @@ function UpdateStockView() {
             </div>
             <StatusBadge status={statusOf(selected)} />
           </div>
-        ) : (
-          <div className="p-4">
+        ) : null}
+      </Card>
+
+      {!selected && (
+        <>
+          <Card className="p-4">
             <SearchInput
               autoFocus
               value={search}
               onChange={setSearch}
               placeholder="Search by ID, name or category…"
             />
-
             {!search && recent.length > 0 && (
               <div className="mt-3">
-                <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted">Recently updated</p>
-                <div className="no-scrollbar flex gap-1.5 overflow-x-auto pb-0.5">
-                  {recent.map((i) => (
-                    <Chip key={i.id} onClick={() => choose(i.id)}>
-                      {i.name}
-                    </Chip>
-                  ))}
-                </div>
+              <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted">
+                Recently updated
+              </p>
+              <div className="no-scrollbar flex gap-1.5 overflow-x-auto pb-0.5">
+                {recent.map((i) => (
+                  <Chip key={i.id} onClick={() => choose(i.id)}>
+                    {i.name}
+                  </Chip>
+                ))}
+              </div>
               </div>
             )}
+          </Card>
 
-            <ul className="mt-3 divide-y divide-line overflow-y-auto rounded-md border border-line">
+          <Card>
+            <SectionTitle>
+              {matches.length} item{matches.length === 1 ? "" : "s"} available
+            </SectionTitle>
+            <ul className="divide-y divide-line overflow-y-auto">
               {matches.length === 0 ? (
                 <li>
                   <Empty>
-                    No item matches “{search}”.{" "}
+                    No items match “{search}”.{" "}
                     <Link href="/add" className="font-semibold text-steel-600 hover:underline">
-                      Add it
+                      Add an item
                     </Link>
                   </Empty>
                 </li>
@@ -419,9 +427,9 @@ function UpdateStockView() {
                 ))
               )}
             </ul>
-          </div>
-        )}
-      </Card>
+          </Card>
+        </>
+      )}
 
       {/* Step 2 — the movement */}
       {selected && (
@@ -743,23 +751,35 @@ function UpdateStockView() {
                 </div>
               )}
 
-              <div>
-                <label className="label" htmlFor="note">
-                  {noteLabel}
-                </label>
-                <input
-                  id="note"
-                  className="field"
-                  maxLength={500}
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  placeholder={notePlaceholder}
-                />
+              <div className={isPurchase ? "grid gap-3 sm:grid-cols-2" : ""}>
                 {isPurchase && (
-                  <p className="mt-1 text-[11px] text-muted">
-                    Lets you match this receipt back to the supplier&apos;s bill later.
-                  </p>
+                  <div>
+                    <label className="label" htmlFor="supplier-invoice">
+                      Supplier invoice / PO number (optional)
+                    </label>
+                    <input
+                      id="supplier-invoice"
+                      className="field"
+                      maxLength={200}
+                      value={supplierInvoice}
+                      onChange={(e) => setSupplierInvoice(e.target.value)}
+                      placeholder="PO-2291"
+                    />
+                  </div>
                 )}
+                <div>
+                  <label className="label" htmlFor="note">
+                    {noteLabel}
+                  </label>
+                  <input
+                    id="note"
+                    className="field"
+                    maxLength={500}
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder={notePlaceholder}
+                  />
+                </div>
               </div>
 
               {/* Current → projected, so a slip is caught before it is saved. */}

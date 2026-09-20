@@ -99,6 +99,7 @@ export default function UnitDetailPage() {
                   {m.reason ?? "—"}
                   {m.job_id ? ` · ${jobName(m.job_id)}` : ""}
                   {m.note ? ` · ${m.note}` : ""}
+                  {m.supplier_invoice ? ` · Invoice: ${m.supplier_invoice}` : ""}
                   {m.actor ? ` · ${m.actor}` : ""}
                 </span>
                 <span className="text-[11px] text-muted">{dateTime(m.created_at)}</span>

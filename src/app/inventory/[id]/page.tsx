@@ -301,6 +301,7 @@ export default function ItemDetailPage() {
                   {m.reason ?? "—"}
                   {m.job_id ? ` · ${jobName(m.job_id)}` : ""}
                   {m.note ? ` · ${m.note}` : ""}
+                  {m.supplier_invoice ? ` · Invoice: ${m.supplier_invoice}` : ""}
                   {(() => {
                     const label = movementAmountLabel(m, item.unit);
                     return label ? ` · ${label}` : "";

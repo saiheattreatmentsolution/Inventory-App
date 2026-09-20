@@ -198,6 +198,7 @@ export default function DashboardPage() {
                       return label ? ` · ${label}` : "";
                     })()}
                     {m.note ? ` · ${m.note}` : ""}
+                    {m.supplier_invoice ? ` · Invoice: ${m.supplier_invoice}` : ""}
                     {m.actor ? ` · ${shortActor(m.actor)}` : ""}
                   </p>
                 </div>

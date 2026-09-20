@@ -126,7 +126,7 @@ export function filterMovements(movements: Movement[], f: MovementFilters): Move
 
   return movements
     .filter((m) => {
-      if (q && !`${m.item_id} ${m.item_name} ${m.category} ${m.note ?? ""}`.toLowerCase().includes(q))
+      if (q && !`${m.item_id} ${m.item_name} ${m.category} ${m.note ?? ""} ${m.supplier_invoice ?? ""}`.toLowerCase().includes(q))
         return false;
       if (f.type !== "all" && m.type !== f.type) return false;
       if (f.category !== "all" && m.category !== f.category) return false;

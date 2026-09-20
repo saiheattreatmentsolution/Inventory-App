@@ -76,7 +76,8 @@ create table public.movements (
   type          text not null check (type in ('in','out','adjust','condition')),
   quantity      numeric not null,                   -- SIGNED change to the store balance
   reason        text check (length(reason) <= 100),
-  note          text check (length(note) <= 500),   -- invoice number, or what happened
+  note          text check (length(note) <= 500),   -- general movement note
+  supplier_invoice text check (length(supplier_invoice) <= 200), -- purchase invoice or PO number
   actor         text check (length(actor) <= 160),  -- taken from the session
   actor_id      uuid references auth.users(id) on delete set null,
   job_id        uuid references public.jobs(id),     -- a job with history can't be deleted
@@ -428,6 +429,7 @@ create function public.apply_movement(
   p_quantity     numeric,
   p_reason       text,
   p_note         text,
+  p_supplier_invoice text default null,
   p_job_id       uuid default null,
   p_unit_ids     text[] default '{}',
   p_unit_cost    numeric default null,
@@ -691,11 +693,11 @@ begin
    where id = p_item_id
   returning * into rec;
 
-  insert into public.movements (item_id, item_name, category, type, quantity,
-                                reason, note, actor, actor_id, job_id,
+    insert into public.movements (item_id, item_name, category, type, quantity,
+          reason, note, supplier_invoice, actor, actor_id, job_id,
                                 unit_ids, write_off_quantity, balance_after)
   values (rec.id, rec.name, rec.category, p_type, delta,
-          p_reason, p_note, public.current_actor(), auth.uid(),
+      p_reason, p_note, p_supplier_invoice, public.current_actor(), auth.uid(),
           coalesce(p_job_id, v_from_job), v_units, v_write_off, new_qty);
 
   return rec;

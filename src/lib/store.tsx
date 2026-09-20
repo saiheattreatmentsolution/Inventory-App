@@ -23,6 +23,7 @@ type MovementInput = {
   quantity: number;
   reason: string;
   note: string;
+  supplier_invoice?: string;
   job_id?: string | null;
   /** Which physical units this covers. Empty for bulk items. */
   unit_ids?: string[];
@@ -212,6 +213,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         p_quantity: input.quantity,
         p_reason: input.reason || null,
         p_note: input.note.trim() || null,
+        p_supplier_invoice: input.supplier_invoice?.trim() || null,
         p_job_id: input.job_id ?? null,
         p_unit_ids: input.unit_ids ?? [],
         p_unit_cost: input.unit_cost ?? null,

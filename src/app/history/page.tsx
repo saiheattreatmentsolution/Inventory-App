@@ -94,7 +94,7 @@ function HistoryView() {
 
   const exportCsv = () => {
     const rows: (string | number | null)[][] = [
-      ["S.No.", "Date", "Item ID", "Product Name", "Category", "Type", "Stock In", "Stock Out", "Balance", "Reason", "Job", "Written off", "Note", "Unit IDs", "User"],
+      ["S.No.", "Date", "Item ID", "Product Name", "Category", "Type", "Stock In", "Stock Out", "Balance", "Reason", "Job", "Written off", "Note", "Supplier Invoice", "Unit IDs", "User"],
       ...visible.map((m, n) => [
         n + 1,
         dateTime(m.created_at),
@@ -109,6 +109,7 @@ function HistoryView() {
         m.job_id ? jobName(m.job_id) : "",
         m.write_off_quantity ?? "",
         m.note ?? "",
+        m.supplier_invoice ?? "",
         m.unit_ids.join(" "),
         m.actor ?? "",
       ]),
@@ -288,6 +289,9 @@ function HistoryView() {
                     <td className="px-3 py-2 text-muted">
                       {m.reason ?? "—"}
                       {m.note && <span className="block text-[11px]">{m.note}</span>}
+                      {m.supplier_invoice && (
+                        <span className="block text-[11px]">Invoice: {m.supplier_invoice}</span>
+                      )}
                     </td>
                     <td className="px-3 py-2 text-muted">{m.job_id ? jobName(m.job_id) : "—"}</td>
                     <td className="num px-3 py-2 text-[11px] text-muted">
@@ -331,6 +335,7 @@ function HistoryView() {
                   {m.reason ?? "—"}
                   {m.job_id ? ` · ${jobName(m.job_id)}` : ""}
                   {m.note ? ` · ${m.note}` : ""}
+                  {m.supplier_invoice ? ` · Invoice: ${m.supplier_invoice}` : ""}
                   {(() => {
                     const label = movementAmountLabel(m, unitOf.get(m.item_id) ?? "");
                     return label ? ` · ${label}` : "";

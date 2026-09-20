@@ -28,7 +28,8 @@ export type Movement = {
   type: MovementType;
   quantity: number; // signed change to the store balance
   reason: string | null;
-  note: string | null;       // invoice number on a purchase, what happened on a damage / loss
+  note: string | null;       // general movement note
+  supplier_invoice: string | null;
   actor: string | null;      // display name/email, taken from the session
   actor_id: string | null;   // auth user id, so attribution survives a rename
   job_id: string | null;
