@@ -86,7 +86,7 @@ export function NewCategoryForm({
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
           onKeyDown={onKeyDown}
-          placeholder="REF"
+          placeholder="BURNR"
         />
       </div>
       <Button
