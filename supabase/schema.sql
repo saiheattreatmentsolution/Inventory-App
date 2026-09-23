@@ -25,7 +25,7 @@ create table public.profiles (
 -- ---------- Categories (grouping, and the item ID prefix) ----------
 create table public.categories (
   name       text primary key check (length(name) between 1 and 100),
-  code       text not null unique check (code ~ '^[A-Z]{3}$'),  -- the SAI-<code>-001 prefix
+  code       text not null unique check (code ~ '^[A-Z]{5}$'),  -- the SAI-<code>-01 prefix
   created_at timestamptz not null default now()
 );
 
@@ -44,7 +44,7 @@ create index jobs_status_idx on public.jobs (status, name);
 
 -- ---------- Items (one row per product) ----------
 create table public.items (
-  id                text primary key,               -- SAI-BRN-001
+  id                text primary key,               -- SAI-BURNR-01
   name              text not null check (length(name) between 1 and 200),
   category          text not null references public.categories(name),
   unit              text not null default 'pcs' check (length(unit) between 1 and 20),
@@ -96,7 +96,7 @@ create index movements_date_idx on public.movements (created_at desc);
 
 -- ---------- Units (one row per physical thing, for serialized items) ----------
 create table public.units (
-  id           text primary key,                    -- SAI-BRN-001-01
+  id           text primary key,                    -- SAI-BURNR-01-001
   item_id      text not null references public.items(id) on delete cascade,
   seq          int  not null check (seq > 0),
   -- The same product can be bought from different makers at different prices,
@@ -203,15 +203,15 @@ declare
   n int;
 begin
   -- p_code goes into a regex and into the ID, so it is checked, not trusted.
-  if p_code !~ '^[A-Z]{3}$' then
+  if p_code !~ '^[A-Z]{5}$' then
     raise exception 'Invalid category code: %', p_code;
   end if;
 
   select coalesce(max((split_part(id, '-', 3))::int), 0) + 1
     into n
     from public.items
-   where id ~ ('^SAI-' || p_code || '-[0-9]{3}$');
-  return 'SAI-' || p_code || '-' || lpad(n::text, 3, '0');
+   where id ~ ('^SAI-' || p_code || '-[0-9]{2}$');
+  return 'SAI-' || p_code || '-' || lpad(n::text, 2, '0');
 end;
 $$;
 
@@ -295,7 +295,7 @@ begin
     from public.units where item_id = p_item_id;
 
   for i in 0 .. p_count - 1 loop
-    new_id := p_item_id || '-' || lpad((next_seq + i)::text, 2, '0');
+    new_id := p_item_id || '-' || lpad((next_seq + i)::text, 3, '0');
         insert into public.units (id, item_id, seq, unit_cost, manufacturer, manufacturing_date)
         values (new_id, p_item_id, next_seq + i, p_unit_cost, p_manufacturer,
           p_manufacturing_date);
@@ -321,8 +321,8 @@ begin
   if p_name is null or length(trim(p_name)) = 0 then
     raise exception 'Category name is required';
   end if;
-  if p_code !~ '^[A-Z]{3}$' then
-    raise exception 'Code must be exactly 3 uppercase letters';
+  if p_code !~ '^[A-Z]{5}$' then
+    raise exception 'Code must be exactly 5 uppercase letters';
   end if;
   if exists (select 1 from public.categories where name = trim(p_name)) then
     raise exception 'That category already exists';

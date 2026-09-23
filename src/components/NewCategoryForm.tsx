@@ -5,7 +5,7 @@ import { useStore } from "@/lib/store";
 import { Button } from "@/components/ui";
 
 /**
- * Add a category — a name and its fixed 3-letter item-ID prefix. Used inline
+ * Add a category — a name and its fixed 5-letter item-ID prefix. Used inline
  * on Add item (so a new kind of product is never blocked on this first) and
  * on Manage people (so the full list can be reviewed in one place).
  */
@@ -23,7 +23,7 @@ export function NewCategoryForm({
   const [err, setErr] = useState<string | null>(null);
 
   const codeValue = code.trim().toUpperCase();
-  const codeInvalid = codeValue !== "" && !/^[A-Z]{3}$/.test(codeValue);
+  const codeInvalid = codeValue !== "" && !/^[A-Z]{5}$/.test(codeValue);
   const taken =
     categories.some((c) => c.name.toLowerCase() === name.trim().toLowerCase()) ||
     categories.some((c) => c.code === codeValue);
@@ -76,12 +76,12 @@ export function NewCategoryForm({
       </div>
       <div className="w-28">
         <label className="label" htmlFor="new-category-code">
-          Code (3 letters)
+          Code (5 letters)
         </label>
         <input
           id="new-category-code"
           className="field num uppercase"
-          maxLength={3}
+          maxLength={5}
           autoComplete="off"
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
@@ -101,13 +101,13 @@ export function NewCategoryForm({
           Cancel
         </Button>
       )}
-      {codeInvalid && <p className="w-full text-[11px] text-danger-600">Code must be exactly 3 letters.</p>}
+      {codeInvalid && <p className="w-full text-[11px] text-danger-600">Code must be exactly 5 letters.</p>}
       {!codeInvalid && taken && (
         <p className="w-full text-[11px] text-danger-600">That name or code is already in use.</p>
       )}
       {err && <p className="w-full text-[11px] text-danger-600">{err}</p>}
       <p className="w-full text-[11px] text-muted">
-        The code becomes the item-ID prefix (<span className="num">SAI-{codeValue || "XXX"}-001</span>) and cannot
+        The code becomes the item-ID prefix (<span className="num">SAI-{codeValue || "XXXXX"}-01</span>) and cannot
         be changed afterwards.
       </p>
     </div>

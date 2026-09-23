@@ -59,7 +59,7 @@ export function UnitFinder({ onClose }: { onClose: () => void }) {
             className="field num"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="SAI-BRN-001-01"
+            placeholder="SAI-BURNR-01-001"
             aria-label="Unit ID"
           />
           <p className="mt-1 text-[11px] text-muted">

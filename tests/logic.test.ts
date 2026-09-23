@@ -15,11 +15,11 @@ const mk = (id: string, name: string, category: string, quantity: number, thresh
 });
 
 const items: Item[] = [
-  mk("SAI-HOS-0001", 'Hose 1/2 inch x 10M', "Hoses", 0, 6),
-  mk("SAI-HOS-0002", 'Hose 1/2 inch x 5M', "Hoses", 9, 10),
-  mk("SAI-HOS-0003", 'Hose 2 inch x 10M', "Hoses", 12, 5),
-  mk("SAI-BRN-0001", "Oil Burner 8 MBTU", "Burners", 2, 3),
-  mk("SAI-CBL-0001", "Welding Cable 35 sq mm", "Cables", 60, 100),
+  mk("SAI-HOSES-01", 'Hose 1/2 inch x 10M', "Hoses", 0, 6),
+  mk("SAI-HOSES-02", 'Hose 1/2 inch x 5M', "Hoses", 9, 10),
+  mk("SAI-HOSES-03", 'Hose 2 inch x 10M', "Hoses", 12, 5),
+  mk("SAI-BURNR-01", "Oil Burner 8 MBTU", "Burners", 2, 3),
+  mk("SAI-CABLE-01", "Welding Cable 35 sq mm", "Cables", 60, 100),
 ];
 
 let fails = 0;
@@ -43,36 +43,36 @@ eq("no minimum, some in store, is in stock", statusOf(mk("x","x","x",2,0)), "in_
 const ids = (f: Partial<typeof EMPTY_ITEM_FILTERS>) =>
   filterItems(items, { ...EMPTY_ITEM_FILTERS, ...f }).map((i) => i.id);
 eq("search by category word", ids({ query: "hose" }).length, 3);
-eq("search by ID prefix", ids({ query: "SAI-HOS" }).length, 3);
+eq("search by ID prefix", ids({ query: "SAI-HOSES" }).length, 3);
 eq("search by size fragment", ids({ query: "1/2" }).length, 2);
-eq("single term 'burner'", ids({ query: "burner" }), ["SAI-BRN-0001"]);
-eq("single term 'cable'", ids({ query: "cable" }), ["SAI-CBL-0001"]);
+eq("single term 'burner'", ids({ query: "burner" }), ["SAI-BURNR-01"]);
+eq("single term 'cable'", ids({ query: "cable" }), ["SAI-CABLE-01"]);
 // decisive: OR would return both, AND returns neither
 eq("multi-term search is AND not OR", ids({ query: "burner cable" }), []);
-eq("multi-term AND narrows", ids({ query: "hose 5m" }), ["SAI-HOS-0002"]);
-eq("search is case-insensitive", ids({ query: "OIL BURNER" }), ["SAI-BRN-0001"]);
+eq("multi-term AND narrows", ids({ query: "hose 5m" }), ["SAI-HOSES-02"]);
+eq("search is case-insensitive", ids({ query: "OIL BURNER" }), ["SAI-BURNR-01"]);
 
 // filters combine (AND)
 eq("category multi-select", ids({ categories: ["Hoses", "Cables"] }).length, 4);
-eq("status filter", ids({ status: "reorder" }).sort(), ["SAI-BRN-0001", "SAI-CBL-0001", "SAI-HOS-0002"]);
-eq("category AND status", ids({ categories: ["Hoses"], status: "reorder" }), ["SAI-HOS-0002"]);
+eq("status filter", ids({ status: "reorder" }).sort(), ["SAI-BURNR-01", "SAI-CABLE-01", "SAI-HOSES-02"]);
+eq("category AND status", ids({ categories: ["Hoses"], status: "reorder" }), ["SAI-HOSES-02"]);
 eq("no match returns empty", ids({ query: "nothing here" }), []);
 
 // archived products stay out of every view except the archived one
-const archivedItem: Item = { ...mk("SAI-MSC-0009", "Retired Trunk", "Storage & misc", 4, 1),
+const archivedItem: Item = { ...mk("SAI-MISCE-09", "Retired Trunk", "Storage & misc", 4, 1),
   archived_at: "2026-02-01T00:00:00Z" };
 const withArchived = [...items, archivedItem];
 eq("archived hidden from the default list",
-   filterItems(withArchived, EMPTY_ITEM_FILTERS).map((i) => i.id).includes("SAI-MSC-0009"), false);
+   filterItems(withArchived, EMPTY_ITEM_FILTERS).map((i) => i.id).includes("SAI-MISCE-09"), false);
 eq("archived hidden from a status filter",
-   filterItems(withArchived, { ...EMPTY_ITEM_FILTERS, status: "in_stock" }).map((i) => i.id).includes("SAI-MSC-0009"), false);
+   filterItems(withArchived, { ...EMPTY_ITEM_FILTERS, status: "in_stock" }).map((i) => i.id).includes("SAI-MISCE-09"), false);
 eq("archived view shows only archived",
-   filterItems(withArchived, { ...EMPTY_ITEM_FILTERS, status: "archived" }).map((i) => i.id), ["SAI-MSC-0009"]);
+   filterItems(withArchived, { ...EMPTY_ITEM_FILTERS, status: "archived" }).map((i) => i.id), ["SAI-MISCE-09"]);
 
 // sorting
-eq("sort qty asc", ids({ sort: "qty_asc" })[0], "SAI-HOS-0001");
-eq("sort qty desc", ids({ sort: "qty_desc" })[0], "SAI-CBL-0001");
-eq("sort worst status first", ids({ sort: "status" })[0], "SAI-HOS-0001");
+eq("sort qty asc", ids({ sort: "qty_asc" })[0], "SAI-HOSES-01");
+eq("sort qty desc", ids({ sort: "qty_desc" })[0], "SAI-CABLE-01");
+eq("sort worst status first", ids({ sort: "status" })[0], "SAI-HOSES-01");
 
 // filtering must not mutate the caller's array
 const before = items.map((i) => i.id);
@@ -81,7 +81,7 @@ eq("source array not reordered", items.map((i) => i.id), before);
 
 // movements
 const mv = (id: string, item: string, type: "in"|"out"|"adjust", q: number, when: string, reason: string): Movement => ({
-  id, item_id: "SAI-HOS-0001", item_name: item, category: "Hoses", type, quantity: q,
+  id, item_id: "SAI-HOSES-01", item_name: item, category: "Hoses", type, quantity: q,
   reason, note: "Delivery received", supplier_invoice: "PO-1", actor: "Neeraj", actor_id: null, job_id: null, unit_ids: [],
   write_off_quantity: null, balance_after: 10, created_at: when,
 });
@@ -119,26 +119,26 @@ eq("csv leaves ordinary text alone", toCsv([["Oil Burner 8 MBTU"]]), "Oil Burner
 eq("csv still escapes embedded CR", toCsv([["a\rb"]]), '"a\rb"');
 
 // valuation: same product, two makers, two prices
-const burner = mk("SAI-BRN-0003", "Oil Burner 8 MBTU", "Burners", 3, 1);
+const burner = mk("SAI-BURNR-03", "Oil Burner 8 MBTU", "Burners", 3, 1);
 const u = (id: string, cost: number | null, status: Unit["status"] = "in_store", maker: string | null = null): Unit => ({
-  id, item_id: "SAI-BRN-0003", seq: Number(id.slice(-2)), unit_cost: cost,
+  id, item_id: "SAI-BURNR-03", seq: Number(id.slice(-2)), unit_cost: cost,
   manufacturer: maker, manufacturing_date: null, status, job_id: null,
   created_at: "2026-01-01T00:00:00Z", updated_at: "2026-01-01T00:00:00Z",
 });
 const burnerUnits = [
-  u("SAI-BRN-0003-01", 74000, "in_store", "Riello"),
-  u("SAI-BRN-0003-02", 81000, "in_store", "Baltur"),
-  u("SAI-BRN-0003-03", 74000, "in_store", "Riello"),
-  u("SAI-BRN-0003-04", 90000, "at_job", "Riello"),
+  u("SAI-BURNR-03-001", 74000, "in_store", "Riello"),
+  u("SAI-BURNR-03-002", 81000, "in_store", "Baltur"),
+  u("SAI-BURNR-03-003", 74000, "in_store", "Riello"),
+  u("SAI-BURNR-03-004", 90000, "at_job", "Riello"),
 ];
 eq("each unit valued at its own price", valueOf(burner, burnerUnits).value, 229000);
 eq("units out at a job are not on the shelf", valueOf(burner, burnerUnits).counted, 3);
 eq("partly costed stock reports the gap",
-   valueOf(burner, [u("SAI-BRN-0003-01", 74000), u("SAI-BRN-0003-02", null)]),
+   valueOf(burner, [u("SAI-BURNR-03-001", 74000), u("SAI-BURNR-03-002", null)]),
    { value: 74000, costed: 1, counted: 2 });
-eq("no costs at all is null, not zero", valueOf(burner, [u("SAI-BRN-0003-01", null)]).value, null);
+eq("no costs at all is null, not zero", valueOf(burner, [u("SAI-BURNR-03-001", null)]).value, null);
 
-const cable: Item = { ...mk("SAI-TCS-0004", "Compensating Cable", "Thermocouples & sensors", 850, 300),
+const cable: Item = { ...mk("SAI-THMSN-04", "Compensating Cable", "Thermocouples & sensors", 850, 300),
   unit: "m", tracking: "bulk", unit_cost: 95 };
 eq("bulk valued at average cost", valueOf(cable, []).value, 80750);
 
